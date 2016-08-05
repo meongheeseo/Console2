@@ -1,0 +1,22 @@
+C:\Users\john\AppData\Local\Temporary Projects\Console2\bin\Debug\Console2.exe
+C:\Users\john\AppData\Local\Temporary Projects\Console2\bin\Debug\Console2.pdb
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\MainWindow.baml
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\MainWindow.g.cs
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\App.g.cs
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2_MarkupCompile.cache
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2.g.resources
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2.Properties.Resources.resources
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2.csproj.GenerateResource.Cache
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2.exe
+C:\Users\john\AppData\Local\Temporary Projects\Console2\obj\x86\Debug\Console2.pdb
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2.exe
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2.pdb
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\bin\Debug\Console2.exe
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\bin\Debug\Console2.pdb
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\MainWindow.baml
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\MainWindow.g.cs
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\App.g.cs
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2_MarkupCompile.cache
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2.g.resources
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2.Properties.Resources.resources
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Debug\Console2.csproj.GenerateResource.Cache
