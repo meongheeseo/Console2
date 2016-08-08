@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Console2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Universal Balise/LEU Programmer" Height="515" Width="575">
+        Title="Universal Balise/LEU Programmer" Height="627" Width="575">
     <Grid>
         <GroupBox Header="Manufacturer" Height="100" HorizontalAlignment="Left" Margin="12,0,0,0" Name="groupBox1" VerticalAlignment="Top" Width="529">
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -15,14 +15,14 @@
                 <RadioButton Content="Siemens" Name="manu_siemens" Grid.Column="2" VerticalAlignment="Center" Margin="15, 0, 0, 0" Checked="manu_siemens_Checked" />
             </Grid>
         </GroupBox>
-        <GroupBox Header="Position Information" Height="164" HorizontalAlignment="Left" Margin="12,106,0,0" Name="position_gpbox" VerticalAlignment="Top" Width="279">
+        <GroupBox Header="Position Information" Height="187" HorizontalAlignment="Left" Margin="14,179,0,0" Name="position_gpbox" VerticalAlignment="Top" Width="279">
             <Grid>
-                <Label Content="Country code: " Height="28" HorizontalAlignment="Left" Margin="26,5,0,0" Name="label1" VerticalAlignment="Top" />
-                <Label Content="Group code:" Height="28" HorizontalAlignment="Left" Margin="26,31,0,0" Name="label2" VerticalAlignment="Top" />
-                <Label Content="Position code:" Height="28" HorizontalAlignment="Left" Margin="26,57,0,0" Name="label3" VerticalAlignment="Top" />
-                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,7,0,0" Name="countrycode_txt" VerticalAlignment="Top" Width="114" />
-                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,33,0,0" Name="groupcode_txt" VerticalAlignment="Top" Width="114" />
-                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,59,0,0" Name="poscode_txt" VerticalAlignment="Top" Width="114" />
+                <Label Content="Country code: " Height="28" HorizontalAlignment="Left" Margin="26,20,0,0" Name="label1" VerticalAlignment="Top" />
+                <Label Content="Group code:" Height="28" HorizontalAlignment="Left" Margin="26,46,0,0" Name="label2" VerticalAlignment="Top" />
+                <Label Content="Position code:" Height="28" HorizontalAlignment="Left" Margin="26,72,0,0" Name="label3" VerticalAlignment="Top" />
+                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,24,0,00" Name="countrycode_txt" VerticalAlignment="Top" Width="114" />
+                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,50,0,0" Name="groupcode_txt" VerticalAlignment="Top" Width="114" />
+                <TextBox Height="20" HorizontalAlignment="Left" Margin="117,76,0,0" Name="poscode_txt" VerticalAlignment="Top" Width="114" />
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -35,9 +35,9 @@
                 </Grid>
             </Grid>
         </GroupBox>
-        <GroupBox Header="Telegram" Height="164" HorizontalAlignment="Left" Margin="302,106,0,0" Name="telegram_gpbox" VerticalAlignment="Top" Width="239">
+        <GroupBox Header="Telegram" Height="187" HorizontalAlignment="Left" Margin="303,179,0,0" Name="telegram_gpbox" VerticalAlignment="Top" Width="239">
             <Grid>
-                <GroupBox Header="Device" Height="82" HorizontalAlignment="Left" Margin="6,7,0,0" Name="device_gpbox" VerticalAlignment="Top" Width="216" Grid.ColumnSpan="3">
+                <GroupBox Header="Device" Height="82" HorizontalAlignment="Left" Margin="6,16,0,0" Name="device_gpbox" VerticalAlignment="Top" Width="216" Grid.ColumnSpan="3">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -47,7 +47,7 @@
                         <RadioButton Content="LEU" Height="16" HorizontalAlignment="Left" Margin="15,0,0,0" Name="pos_leu" VerticalAlignment="Center" Grid.Column="1" Checked="pos_leu_Checked" />
                     </Grid>
                 </GroupBox>
-                <Button Content="Download" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="download_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="0"/>
+                <Button Content="Download" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="download_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="0" Click="download_btn_Click" />
                 <Button Content="Upload" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="upload_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="1"/>
                 <Button Content="Verify" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="verify_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="2" />
                 <Grid.ColumnDefinitions>
@@ -57,9 +57,17 @@
                 </Grid.ColumnDefinitions>                
             </Grid>
         </GroupBox>
-        <ProgressBar Height="25" HorizontalAlignment="Left" Margin="12,276,0,0" Name="progressBar1" VerticalAlignment="Top" Width="528" />
-        <RichTextBox Height="133" HorizontalAlignment="Left" Margin="12,307,0,0" Name="msgbox" VerticalAlignment="Top" Width="529" />
-        <Button Content="Clear" Height="23" HorizontalAlignment="Left" Margin="465,446,0,0" Name="msgClear_btn" VerticalAlignment="Top" Width="75" Click="msgClear_btn_Click" />
-        <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="379,446,0,0" Name="msgSave_btn" VerticalAlignment="Top" Width="75" Click="msgSave_btn_Click" />
+        <RichTextBox Height="133" HorizontalAlignment="Left" Margin="13,403,0,0" Name="msgbox" VerticalAlignment="Top" Width="529" />
+        <Button Content="Clear" Height="23" HorizontalAlignment="Left" Margin="466,551,0,0" Name="msgClear_btn" VerticalAlignment="Top" Width="75" Click="msgClear_btn_Click" />
+        <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="380,551,0,0" Name="msgSave_btn" VerticalAlignment="Top" Width="75" Click="msgSave_btn_Click" />
+        <GroupBox Header="Serial Port" Height="66" HorizontalAlignment="Left" Margin="12,106,0,0" Name="serial_gpbox" VerticalAlignment="Top" Width="529">
+            <Grid>
+                <Label Content="Serial Port ID: " Height="28" HorizontalAlignment="Left" Margin="11,6,0,0" Name="label4" VerticalAlignment="Top" />
+                <ComboBox Height="23" HorizontalAlignment="Left" Margin="100,9,0,0" Name="serialportbox" VerticalAlignment="Top" Width="177" IsEditable="True" />
+                <Button Content="Connect" Height="23" HorizontalAlignment="Left" Margin="432,7,0,0" Name="serialConnect_btn" VerticalAlignment="Top" Width="75" Click="serialConnect_btn_Click" />
+            </Grid>
+        </GroupBox>
+        <ProgressBar Height="25" HorizontalAlignment="Left" Name="progressBar" VerticalAlignment="Top" Width="528" Margin="14,372,0,0" ValueChanged="progressBar_ValueChanged" />
+        <TextBlock Margin="14,376,11,191" Width="200" TextAlignment="Center" Name="progressLabel"/>
     </Grid>
 </Window>

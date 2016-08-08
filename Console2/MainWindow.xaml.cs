@@ -21,41 +21,46 @@ namespace Console2
     /// </summary>
     public partial class MainWindow : Window
     {
+        int manufacturer_id = 1; // 1 - Shinwoo, 2 - Bombardier, 3 - Siemens
+
         public MainWindow()
         {
             InitializeComponent();
             //msgbox.AppendText("HI", "Red");
             position_gpbox.Visibility = Visibility.Hidden;
+            progressLabel.Text = String.Format("{0}%", progressBar.Value);
         }
 
+        // ----- CHECK WHICH MANUFACTURER IS SELECTED ----- //
+        //
+        // Only enable position group box if Bombardier is selected
+        //
         private void manu_shinwoo_Checked(object sender, RoutedEventArgs e)
         {
             try
             {
                 position_gpbox.Visibility = Visibility.Hidden;
-                pos_leu.Visibility = Visibility.Visible;
+                manufacturer_id = 1;
             }
-            catch (Exception exception) { }
+            catch (Exception) { }
         }
 
         private void manu_bombardier_Checked(object sender, RoutedEventArgs e)
         {
             position_gpbox.Visibility = Visibility.Visible;
-            pos_leu.Visibility = Visibility.Visible;
+            manufacturer_id = 2;
         }
 
         private void manu_siemens_Checked(object sender, RoutedEventArgs e)
         {
             position_gpbox.Visibility = Visibility.Hidden;
-            pos_leu.Visibility = Visibility.Hidden;
+            manufacturer_id = 3;
         }
         
-        //
-        // Position Group
-        //
-        Boolean balise_checked = true;
         
         // ----- CHECKS IF BALISE IS SELECTED ----- //
+        Boolean balise_checked = true;
+
         private void pos_balise_Checked(object sender, RoutedEventArgs e)
         {
             balise_checked = true;
@@ -98,11 +103,7 @@ namespace Console2
             poscode_txt.Text = String.Empty;
         }
 
-        private void msgClear_btn_Click(object sender, RoutedEventArgs e)
-        {
-            msgbox.Document.Blocks.Clear();
-        }
-
+        // ----- MESSAGEBOX SAVE & CLEAR FUNCTIONS ----- //
         private void msgSave_btn_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog saveFile = new SaveFileDialog();
@@ -122,6 +123,72 @@ namespace Console2
                 fStream = new FileStream(saveFile.FileName, FileMode.Create);
                 range.Save(fStream, DataFormats.Rtf);
                 fStream.Close();
+            }
+        }
+        
+        private void msgClear_btn_Click(object sender, RoutedEventArgs e)
+        {
+            msgbox.Document.Blocks.Clear();
+        }
+
+        // ----- SERIAL PORT ----- //
+        private void serialConnect_btn_Click(object sender, RoutedEventArgs e)
+        {
+            // Add inserted value into serialportbox
+            var value = serialportbox.Text;
+
+            serialportbox.Items.Remove(value);
+            serialportbox.Items.Add(value);
+            serialportbox.Items.SortDescriptions.Add(
+                new System.ComponentModel.SortDescription("", System.ComponentModel.ListSortDirection.Ascending));
+        }
+
+        // ----- PROGRESS BAR ----- //
+        private void progressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            progressLabel.Text = String.Format("{0}%", progressBar.Value);
+        }
+
+        private void download_btn_Click(object sender, RoutedEventArgs e)
+        {
+            String filter = " ";
+
+            if (manufacturer_id == 1 && balise_checked) 
+            { 
+                filter = "Shinwoo Balise File (*.BAL.ENC)|*.BAL.ENC|Shinwoo Balise File (*.ENC)|*.ENC"; 
+            }
+            else if (manufacturer_id == 1 && !balise_checked) 
+            { 
+                filter = "Shinwoo LEU File (*.LEU.ENC)|*.LEU.ENC|Shinwoo LEU File (*.ENC)|*.ENC"; 
+            }
+            else if (manufacturer_id == 2 && balise_checked) 
+            { 
+                filter = "Bombarider Balise File (*.BAL)|*.BAL"; 
+            }
+            else if (manufacturer_id == 2 && !balise_checked) 
+            { 
+                filter = "Bombardier LEU File (*.LEU)|*.LEU"; 
+            }
+            else if (manufacturer_id == 3 && balise_checked) 
+            { 
+                filter = "Siemens Balise File (*.TLG)|*.TLG"; 
+            }
+            else 
+            { 
+                filter = "Siemens LEU File (*.SDO)|*.SDO"; 
+            }
+
+            _openFile(filter);
+        }
+
+        private void _openFile(String filter)
+        {
+            OpenFileDialog openFile = new OpenFileDialog();
+            openFile.Filter = filter;
+
+            if (openFile.ShowDialog() == true)
+            {
+                ;
             }
         }
     }
