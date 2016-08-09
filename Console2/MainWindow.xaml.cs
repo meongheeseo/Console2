@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.IO.Ports;
 using Microsoft.Win32;
 
 namespace Console2
@@ -132,6 +133,8 @@ namespace Console2
         }
 
         // ----- SERIAL PORT ----- //
+        private SerialPort serialport;
+
         private void serialConnect_btn_Click(object sender, RoutedEventArgs e)
         {
             // Add inserted value into serialportbox
@@ -141,6 +144,10 @@ namespace Console2
             serialportbox.Items.Add(value);
             serialportbox.Items.SortDescriptions.Add(
                 new System.ComponentModel.SortDescription("", System.ComponentModel.ListSortDirection.Ascending));
+
+            // Connect the serial port.
+            serialport = new SerialPort(value, 38400, Parity.None, 8, StopBits.One);
+            serialport.Open();
         }
 
         // ----- PROGRESS BAR ----- //
@@ -151,45 +158,69 @@ namespace Console2
 
         private void download_btn_Click(object sender, RoutedEventArgs e)
         {
-            String filter = " ";
+            String filter = "";
 
-            if (manufacturer_id == 1 && balise_checked) 
-            { 
-                filter = "Shinwoo Balise File (*.BAL.ENC)|*.BAL.ENC|Shinwoo Balise File (*.ENC)|*.ENC"; 
+            if (manufacturer_id == 1 && balise_checked)
+            {
+                filter = "Shinwoo Balise File (*.BAL.ENC)|*.BAL.ENC|Shinwoo Balise File (*.ENC)|*.ENC";
             }
-            else if (manufacturer_id == 1 && !balise_checked) 
-            { 
-                filter = "Shinwoo LEU File (*.LEU.ENC)|*.LEU.ENC|Shinwoo LEU File (*.ENC)|*.ENC"; 
+            else if (manufacturer_id == 1 && !balise_checked)
+            {
+                filter = "Shinwoo LEU File (*.LEU.ENC)|*.LEU.ENC|Shinwoo LEU File (*.ENC)|*.ENC";
             }
-            else if (manufacturer_id == 2 && balise_checked) 
-            { 
-                filter = "Bombarider Balise File (*.BAL)|*.BAL"; 
+            else if (manufacturer_id == 2 && balise_checked)
+            {
+                filter = "Bombarider Balise File (*.BAL)|*.BAL";
             }
-            else if (manufacturer_id == 2 && !balise_checked) 
-            { 
-                filter = "Bombardier LEU File (*.LEU)|*.LEU"; 
+            else if (manufacturer_id == 2 && !balise_checked)
+            {
+                filter = "Bombardier LEU File (*.LEU)|*.LEU";
             }
-            else if (manufacturer_id == 3 && balise_checked) 
-            { 
-                filter = "Siemens Balise File (*.TLG)|*.TLG"; 
+            else if (manufacturer_id == 3 && balise_checked)
+            {
+                filter = "Siemens Balise File (*.TLG)|*.TLG";
             }
-            else 
-            { 
-                filter = "Siemens LEU File (*.SDO)|*.SDO"; 
+            else
+            {
+                filter = "Siemens LEU File (*.SDO)|*.SDO";
             }
 
-            _openFile(filter);
+            byte[] data = openFile(filter);
+            int size = data.Length;
+            int printCount = 0;
+
+            while (printCount < size)
+            {
+                // Output file data in hex format
+                msgbox.AppendText(String.Format("{0:X}", data[printCount]));
+                printCount++;
+            }
         }
 
-        private void _openFile(String filter)
+        //
+        // Open Telegram file and return read data.
+        //
+        private byte[] openFile(String filter)
         {
             OpenFileDialog openFile = new OpenFileDialog();
             openFile.Filter = filter;
 
+            int size;
+            byte[] data; 
+
+            // Only read in data if user selects a file and presses "Open".
             if (openFile.ShowDialog() == true)
             {
-                ;
+                using (FileStream stream = new FileStream(openFile.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    size = (int)stream.Length;
+                    data = new byte[size];
+                    stream.Read(data, 0, size);
+                    return data;
+                }
             }
+
+            return null;
         }
     }
 
