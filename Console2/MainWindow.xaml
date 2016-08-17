@@ -48,7 +48,7 @@
                     </Grid>
                 </GroupBox>
                 <Button Content="Download" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="download_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="0" Click="download_btn_Click" />
-                <Button Content="Upload" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="upload_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="1"/>
+                <Button Content="Upload" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="upload_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="1" Click="upload_btn_Click" />
                 <Button Content="Verify" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="verify_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="2" />
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
