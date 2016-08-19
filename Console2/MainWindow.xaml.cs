@@ -282,9 +282,12 @@ namespace Console2
             return null;
         }
 
-        [DllImport("SeparateTelegram.dll")]
-        public static extern void Separate(IntPtr src, int clen);
+        //[DllImport("SeparateTelegram.dll")]
+        //public static extern IntPtr Separate(byte[] src, int clen);
         //public static extern int Separate(int src, int clen);
+
+        [DllImport("TelegramSeparation.dll", EntryPoint="Separate", CallingConvention=CallingConvention.Cdecl)]
+        public static extern IntPtr Separate(byte[] src, int clen);
 
         private void upload_btn_Click(object sender, RoutedEventArgs e)
         {
@@ -320,7 +323,8 @@ namespace Console2
                 0x0E,0xEB,0x90,0x31,0x2B,0xF9,0x9E,0x66,0x35,0x8D,0x7A,0xBC,0x25,0x5A,0x10,0x3B,    //29 
                 0x46,0x97,0x37,0xE0,0xEE,0x15,0x2B,0x57,0xB4,0x9D,0xE4,0xF9,0xC7,0xEC,0xE6,0x06     //30 
             };
-
+            
+            /*
             int size = Marshal.SizeOf(upLoadstream[0]) * upLoadstream.Length;
             IntPtr pnt = Marshal.AllocHGlobal(size);
             try
@@ -333,14 +337,28 @@ namespace Console2
                 // Free the unmanaged memory.
                 // Marshal.FreeHGlobal(pnt);
             }
-            //============================
-            Separate(pnt, 480);
-            Marshal.FreeHGlobal(pnt);
-            //byte[] testmsg = { 0x12 };
-            //Separate(upLoadstream, 123);
+            //============================*/
+            
+            IntPtr ptr;
+            
+            ptr = Separate(upLoadstream, 480);
+            String result = PtrToStringAscii(ptr);
+            msgbox.AppendText(result);
+            msgbox.ScrollToEnd();
+        }
 
-            //Separate(upLoadstream, 480);
-            //msgbox.AppendText(String.Format("{0}", result[0]));
+        private static String PtrToStringAscii(IntPtr ptr) // aPtr is nul-terminated
+        {
+            if (ptr == IntPtr.Zero)
+                return "";
+            int len = 0;
+            while (Marshal.ReadByte(ptr, len) != 0)
+                len++;
+            if (len == 0)
+                return "";
+            byte[] array = new byte[len];
+            Marshal.Copy(ptr, array, 0, len);
+            return System.Text.Encoding.ASCII.GetString(array);
         }
     }
 
