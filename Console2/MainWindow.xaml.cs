@@ -31,8 +31,45 @@ namespace Console2
         public MainWindow()
         {
             InitializeComponent();
+            Init_combobox();
             position_gpbox.Visibility = Visibility.Hidden;
             progressLabel.Text = String.Format("{0}%", progressBar.Value);
+        }
+
+        private void Init_combobox()
+        {
+            serialportbox.DisplayMemberPath = "Text";
+            serialportbox.SelectedValuePath = "Value";
+
+            var items = new[] {
+                new { Text = "COM1", Value = "COM1" }, new { Text = "COM2", Value = "COM2" },
+                new { Text = "COM3", Value = "COM3" }, new { Text = "COM4", Value = "COM4" },
+                new { Text = "COM5", Value = "COM5" }, new { Text = "COM6", Value = "COM6" },
+                new { Text = "COM7", Value = "COM7" }, new { Text = "COM8", Value = "COM8" },
+                new { Text = "COM9", Value = "COM9" }, new { Text = "COM10", Value = "COM10" },
+                new { Text = "COM11", Value = "COM11" }, new { Text = "COM12", Value = "COM12" },
+                new { Text = "COM13", Value = "COM13" }, new { Text = "COM14", Value = "COM14" },
+                new { Text = "COM15", Value = "COM15" }, new { Text = "COM16", Value = "COM16" },
+                new { Text = "COM17", Value = "COM17" }, new { Text = "COM18", Value = "COM18" },
+                new { Text = "COM19", Value = "COM19" }, new { Text = "COM20", Value = "COM20" },
+                new { Text = "COM21", Value = "COM21" }, new { Text = "COM22", Value = "COM22" },
+                new { Text = "COM23", Value = "COM23" }, new { Text = "COM24", Value = "COM24" },
+                new { Text = "COM25", Value = "COM25" }, new { Text = "COM26", Value = "COM26" },
+                new { Text = "COM27", Value = "COM27" }, new { Text = "COM28", Value = "COM28" },
+                new { Text = "COM29", Value = "COM29" }, new { Text = "COM30", Value = "COM30" },
+                new { Text = "COM31", Value = "COM31" }, new { Text = "COM32", Value = "COM32" },
+                new { Text = "COM33", Value = "COM33" }, new { Text = "COM34", Value = "COM34" },
+                new { Text = "COM35", Value = "COM35" }, new { Text = "COM36", Value = "COM36" },
+                new { Text = "COM37", Value = "COM37" }, new { Text = "COM38", Value = "COM38" },
+                new { Text = "COM39", Value = "COM39" }, new { Text = "COM40", Value = "COM40" },
+                new { Text = "COM41", Value = "COM41" }, new { Text = "COM42", Value = "COM42" },
+                new { Text = "COM43", Value = "COM43" }, new { Text = "COM44", Value = "COM44" },
+                new { Text = "COM45", Value = "COM45" }, new { Text = "COM46", Value = "COM46" },
+                new { Text = "COM47", Value = "COM47" }, new { Text = "COM48", Value = "COM48" },
+                new { Text = "COM49", Value = "COM49" }, new { Text = "COM50", Value = "COM50" }
+            };
+
+            serialportbox.ItemsSource = items;
         }
 
         // ----- CHECK WHICH MANUFACTURER IS SELECTED ----- //
@@ -60,7 +97,12 @@ namespace Console2
             position_gpbox.Visibility = Visibility.Hidden;
             manufacturer_id = 2;
         }
-        
+
+        private void manu_others_Checked(object sender, RoutedEventArgs e)
+        {
+            position_gpbox.Visibility = Visibility.Hidden;
+            manufacturer_id = 3;
+        }
         
         // ----- CHECKS IF BALISE IS SELECTED ----- //
         private void pos_balise_Checked(object sender, RoutedEventArgs e)
@@ -71,6 +113,11 @@ namespace Console2
         private void pos_leu_Checked(object sender, RoutedEventArgs e)
         {
             device_id = 1;
+        }
+
+        private void pos_others_Checked(object sender, RoutedEventArgs e)
+        {
+            device_id = 2;
         }
 
         // ----- READ, WRITE, RESET BUTTON CONTROL ----- //
@@ -141,10 +188,10 @@ namespace Console2
             // Add inserted value into serialportbox
             var value = serialportbox.Text;
 
-            serialportbox.Items.Remove(value);
-            serialportbox.Items.Add(value);
-            serialportbox.Items.SortDescriptions.Add(
-                new System.ComponentModel.SortDescription("", System.ComponentModel.ListSortDirection.Ascending));
+            //serialportbox.Items.Remove(value);
+            //serialportbox.Items.Add(value);
+            //serialportbox.Items.SortDescriptions.Add(
+            //    new System.ComponentModel.SortDescription("", System.ComponentModel.ListSortDirection.Ascending));
             
             // Connect the serial port.
             serialport = new SerialPort(value, 38400, Parity.None, 8, StopBits.One);
@@ -192,15 +239,21 @@ namespace Console2
 
             byte[] data = openFile(filter);
 
-            SerialPortSend(data);
+            BaliseTelegramDownloadProtocol(data);
         }
 
         // Sends downloaded telegram message via serial port.
-        public void SerialPortSend(byte[] data)
-        { 
+        public void BaliseTelegramDownloadProtocol(byte[] data)
+        {
+            SendTelegramData(data);
+            IsSentCorrectly();
+        }
+
+        public void SendTelegramData(byte[] data)
+        {
             // Preamble
             byte[] preamble = new byte[] { 0xAA, 0x55, 0x55, 0xAA };
-            
+
             // Payload length
             int payload_length = 4 + 4 + 1 + 4 + 2 + 2 + data.Length;
             byte[] length = new byte[4];
@@ -213,8 +266,8 @@ namespace Console2
             byte[] seq = new byte[] { 0x00, 0x01, 0x02, 0x03 };
 
             // Destination Sequence Number
-            byte[] dest = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-            
+            byte[] dest = new byte[] { 0x00, 0x00, 0x00, 0x00 }; 
+
             // Protocol version
             byte[] version = new byte[] { 0x00 };
 
@@ -246,14 +299,19 @@ namespace Console2
             serialport.Write(dest, 0, dest.Length);
             serialport.Write(version, 0, version.Length);
             serialport.Write(cat, 0, cat.Length);
-            serialport.Write(record, 0, record.Length); 
+            serialport.Write(record, 0, record.Length);
             serialport.Write(data_length, 0, data_length.Length);
             serialport.Write(data, 0, data.Length);
             serialport.Write(crc32, 0, crc32.Length);
             serialport.Write(postamble, 0, postamble.Length);
 
-            serialport.Close();
-            if (!serialport.IsOpen) { MessageBox.Show("Serial Port successfully closed.", "Message"); }
+            //serialport.Close();
+            //if (!serialport.IsOpen) { MessageBox.Show("Serial Port successfully closed.", "Message"); }
+        }
+
+        public void IsSentCorrectly()
+        { 
+
         }
 
         //
@@ -360,6 +418,7 @@ namespace Console2
             Marshal.Copy(ptr, array, 0, len);
             return System.Text.Encoding.ASCII.GetString(array);
         }
+
     }
 
     public static class RichTextBoxExtensions
