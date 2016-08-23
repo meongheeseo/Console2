@@ -195,6 +195,7 @@ namespace Console2
             
             // Connect the serial port.
             serialport = new SerialPort(value, 38400, Parity.None, 8, StopBits.One);
+            serialport.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
             serialport.Open();
 
             if (serialport.IsOpen) { MessageBox.Show("Connection Open", "Message"); }
@@ -312,6 +313,13 @@ namespace Console2
         public void IsSentCorrectly()
         { 
 
+        }
+
+        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
+        {
+            SerialPort sp = (SerialPort)sender;
+            String indata = sp.ReadExisting();
+            msgbox.AppendText(indata);
         }
 
         //
