@@ -26,7 +26,7 @@ namespace Console2
     {
         int manufacturer_id = 0; // 0 - Shinwoo, 1 - Bombardier, 2 - Siemens
         int device_id = 0; // 0 - Balise, 2 - LEU
-        int func_id = 0; // 0 - ACK, 1 - NAK, 2 - Telegram Download, 3 - Telegram Upload
+        int func_id = 0; // 0 - ACK, 1 - NAK, 2 - Telegram Download, 3 - Telegram Upload, 5 - Telegram Upload Request
 
         public MainWindow()
         {
@@ -243,14 +243,21 @@ namespace Console2
             BaliseTelegramDownloadProtocol(data);
         }
 
+        private void telRead_btn_Click(object sender, RoutedEventArgs e)
+        {
+            func_id = 5;
+            byte[] data = new byte[] { };
+            BaliseTelegramProtocol(data);
+        }
+
         // Sends downloaded telegram message via serial port.
         public void BaliseTelegramDownloadProtocol(byte[] data)
         {
-            SendTelegramData(data);
+            BaliseTelegramProtocol(data);
             IsSentCorrectly();
         }
 
-        public void SendTelegramData(byte[] data)
+        public void BaliseTelegramProtocol(byte[] data)
         {
             // Preamble
             byte[] preamble = new byte[] { 0xAA, 0x55, 0x55, 0xAA };
@@ -274,7 +281,9 @@ namespace Console2
 
             // Category
             byte[] cat = new byte[4];
-            cat[0] = (byte)((1 << 6) + (manufacturer_id << 3) + ((func_id >> 2)));
+            // Some property values doesn't matter if its not download protocol
+            if (func_id == 2) { cat[0] = (byte)((0 << 6) + (manufacturer_id << 3) + ((func_id >> 2))); }
+            else { cat[0] = (byte)(func_id >> 2); }
             cat[1] = (byte)((func_id << 6) + (device_id << 3));
 
             // Record seq
@@ -302,7 +311,7 @@ namespace Console2
             serialport.Write(cat, 0, cat.Length);
             serialport.Write(record, 0, record.Length);
             serialport.Write(data_length, 0, data_length.Length);
-            serialport.Write(data, 0, data.Length);
+            if (func_id == 2) serialport.Write(data, 0, data.Length);
             serialport.Write(crc32, 0, crc32.Length);
             serialport.Write(postamble, 0, postamble.Length);
 
@@ -426,7 +435,6 @@ namespace Console2
             Marshal.Copy(ptr, array, 0, len);
             return System.Text.Encoding.ASCII.GetString(array);
         }
-
     }
 
     public static class RichTextBoxExtensions
