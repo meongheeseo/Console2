@@ -88,7 +88,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Content="Telegram Read" Grid.Column ="0" Height="23" HorizontalAlignment="Center" Name="telRead_btn" VerticalAlignment="Center" Width="100" Click="telRead_btn_Click" />
-                    <Button Content="간이 입출력 특성" Grid.Column="1" Height="23" HorizontalAlignment="Center" Name="tempinout_btn" VerticalAlignment="Center" Width="100" />
+                    <Button Content="간이 입출력 특성" Grid.Column="1" Height="23" HorizontalAlignment="Center" Name="tempinout_btn" VerticalAlignment="Center" Width="100" Click="tempinout_btn_Click" />
                     <Button Content="정밀 입출력 특성" Grid.Column="2" Height="23" HorizontalAlignment="Center" Name="inout_btn" VerticalAlignment="Center" Width="100" />
                 </Grid>
             </GroupBox>

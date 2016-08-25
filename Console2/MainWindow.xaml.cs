@@ -27,6 +27,7 @@ namespace Console2
         int manufacturer_id = 0; // 0 - Shinwoo, 1 - Bombardier, 2 - Siemens
         int device_id = 0; // 0 - Balise, 2 - LEU
         int func_id = 0; // 0 - ACK, 1 - NAK, 2 - Telegram Download, 3 - Telegram Upload, 5 - Telegram Upload Request
+                         // 7 - Baslise Input to Output characteristics
 
         public MainWindow()
         {
@@ -250,6 +251,25 @@ namespace Console2
             BaliseTelegramProtocol(data);
         }
 
+        private void tempinout_btn_Click(object sender, RoutedEventArgs e)
+        {
+            func_id = 7;
+            int minpercent = 500; // 1 = 0.1%
+            int maxpercent = 850; // 1 = 0.1%
+            int numSteps = 80; // Value must be between 20-100
+            int timeout = 255; // min 0 -> 10ms, max 255 -> 2.56s
+
+            byte[] data = new byte[6];
+            data[0] = (byte)(minpercent >> 8);
+            data[1] = (byte)(minpercent);
+            data[2] = (byte)(maxpercent >> 8);
+            data[3] = (byte)(maxpercent);
+            data[4] = (byte)(numSteps);
+            data[5] = (byte)(timeout);
+
+            BaliseTelegramProtocol(data);
+        }
+
         // Sends downloaded telegram message via serial port.
         public void BaliseTelegramDownloadProtocol(byte[] data)
         {
@@ -281,10 +301,26 @@ namespace Console2
 
             // Category
             byte[] cat = new byte[4];
-            // Some property values doesn't matter if its not download protocol
-            if (func_id == 2) { cat[0] = (byte)((0 << 6) + (manufacturer_id << 3) + ((func_id >> 2))); }
-            else { cat[0] = (byte)(func_id >> 2); }
-            cat[1] = (byte)((func_id << 6) + (device_id << 3));
+            
+            // manufacturer's id is only taken into consideration when func = telegram download
+            if (func_id == 2) 
+            {
+                cat[0] = (byte)((0 << 6) + (manufacturer_id << 3) + ((func_id >> 2))); 
+            }
+            else 
+            { 
+                cat[0] = (byte)(func_id >> 2); 
+            }
+            
+            // device's id doesn't matter if func = Balise input to output characteristics measure
+            if (func_id != 7)
+            {
+                cat[1] = (byte)((func_id << 6) + (device_id << 3));
+            }
+            else
+            {
+                cat[1] = (byte)(func_id << 6);
+            }
 
             // Record seq
             byte[] record;
@@ -311,7 +347,7 @@ namespace Console2
             serialport.Write(cat, 0, cat.Length);
             serialport.Write(record, 0, record.Length);
             serialport.Write(data_length, 0, data_length.Length);
-            if (func_id == 2) serialport.Write(data, 0, data.Length);
+            if (func_id != 5) serialport.Write(data, 0, data.Length);
             serialport.Write(crc32, 0, crc32.Length);
             serialport.Write(postamble, 0, postamble.Length);
 
