@@ -70,7 +70,7 @@
                 </RichTextBox.Resources>
             </RichTextBox>
             <Button Content="Clear" Height="23" HorizontalAlignment="Center" Margin="467,746,0,0" Name="msgClear_btn" VerticalAlignment="Top" Width="75" Click="msgClear_btn_Click" />
-            <Button Content="Save" Height="23" HorizontalAlignment="Center" Margin="391,746,91,0" Name="msgSave_btn" VerticalAlignment="Top" Width="75" Click="msgSave_btn_Click" />
+            <Button Content="Save" Height="23" HorizontalAlignment="Center" Margin="389,746,91,0" Name="msgSave_btn" VerticalAlignment="Top" Width="75" Click="msgSave_btn_Click" />
             <GroupBox Header="Serial Port" Height="66" HorizontalAlignment="Center" Margin="12,371,0,0" Name="serial_gpbox" VerticalAlignment="Top" Width="529">
                 <Grid>
                     <Label Content="Serial Port: " Height="28" HorizontalAlignment="Left" Margin="11,6,0,0" Name="label4" VerticalAlignment="Top" />

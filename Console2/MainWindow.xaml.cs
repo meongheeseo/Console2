@@ -360,11 +360,19 @@ namespace Console2
 
         }
 
+        public delegate void UpdateTextCallback(String msg);
+
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
-            String indata = sp.ReadExisting();
-            msgbox.AppendText(indata);
+            msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), sp.ReadExisting());
+            //String indata = sp.ReadExisting();
+            //msgbox.AppendText(indata);
+        }
+
+        private void UpdateText(String msg)
+        {
+            msgbox.AppendText(msg);
         }
 
         //
