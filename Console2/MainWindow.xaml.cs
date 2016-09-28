@@ -35,6 +35,7 @@ namespace Console2
             Init_combobox();
             position_gpbox.Visibility = Visibility.Hidden;
             progressLabel.Text = String.Format("{0}%", progressBar.Value);
+            serialportbox.Text = Properties.Settings.Default.ComportString;
         }
 
         private void Init_combobox()
@@ -183,6 +184,7 @@ namespace Console2
 
         // ----- SERIAL PORT ----- //
         private SerialPort serialport;
+        private Boolean serialport_open = false;
 
         private void serialConnect_btn_Click(object sender, RoutedEventArgs e)
         {
@@ -199,7 +201,13 @@ namespace Console2
             serialport.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
             serialport.Open();
 
-            if (serialport.IsOpen) { MessageBox.Show("Connection Open", "Message"); }
+            if (serialport.IsOpen) 
+            {
+                serialport_open = true;
+                MessageBox.Show("Connection Open", "Message");
+                Properties.Settings.Default.ComportString = serialportbox.Text;
+                Properties.Settings.Default.Save();
+            }
             else { MessageBox.Show("Recheck Connection", "Warning"); }
         }
 
@@ -246,6 +254,7 @@ namespace Console2
 
         private void telRead_btn_Click(object sender, RoutedEventArgs e)
         {
+            telRead_btn.Background = Brushes.DarkBlue;
             func_id = 5;
             byte[] data = new byte[] { };
             BaliseTelegramProtocol(data);
@@ -279,77 +288,89 @@ namespace Console2
 
         public void BaliseTelegramProtocol(byte[] data)
         {
-            // Preamble
-            byte[] preamble = new byte[] { 0xAA, 0x55, 0x55, 0xAA };
-
-            // Payload length
-            int payload_length = 4 + 4 + 1 + 4 + 2 + 2 + data.Length;
-            byte[] length = new byte[4];
-            length[0] = (byte)(payload_length >> 24);
-            length[1] = (byte)(payload_length >> 16);
-            length[2] = (byte)(payload_length >> 8);
-            length[3] = (byte)payload_length;
-
-            // Source Sequence Number
-            byte[] seq = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-
-            // Destination Sequence Number
-            byte[] dest = new byte[] { 0x00, 0x00, 0x00, 0x00 }; 
-
-            // Protocol version
-            byte[] version = new byte[] { 0x00 };
-
-            // Category
-            byte[] cat = new byte[4];
-            
-            // manufacturer's id is only taken into consideration when func = telegram download
-            if (func_id == 2) 
-            {
-                cat[0] = (byte)((0 << 6) + (manufacturer_id << 3) + ((func_id >> 2))); 
-            }
-            else 
+            if (!serialport_open || !serialport.IsOpen || serialport == null) 
             { 
-                cat[0] = (byte)(func_id >> 2); 
+                MessageBox.Show("Recheck Serial Port Connection", "Warning", MessageBoxButton.OK);
+                telRead_btn.ClearValue(Button.BackgroundProperty);
+                    //System.Windows.Media.LinearGradientBrush;
             }
-            
-            // device's id doesn't matter if func = Balise input to output characteristics measure
-            if (func_id != 7)
+
+            else if (serialport.IsOpen)
             {
-                cat[1] = (byte)((func_id << 6) + (device_id << 3));
+                // Preamble
+                byte[] preamble = new byte[] { 0xAA, 0x55, 0x55, 0xAA };
+
+                // Payload length
+                int payload_length = 4 + 4 + 1 + 4 + 2 + 2 + data.Length;
+                byte[] length = new byte[4];
+                length[0] = (byte)(payload_length >> 24);
+                length[1] = (byte)(payload_length >> 16);
+                length[2] = (byte)(payload_length >> 8);
+                length[3] = (byte)payload_length;
+
+                // Source Sequence Number
+                byte[] seq = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+
+                // Destination Sequence Number
+                byte[] dest = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+
+                // Protocol version
+                byte[] version = new byte[] { 0x00 };
+
+                // Category
+                byte[] cat = new byte[4];
+
+                // manufacturer's id is only taken into consideration when func = telegram download
+                if (func_id == 2)
+                {
+                    cat[0] = (byte)((0 << 6) + (manufacturer_id << 3) + ((func_id >> 2)));
+                }
+                else
+                {
+                    cat[0] = (byte)(func_id >> 2);
+                }
+
+                // device's id doesn't matter if func = Balise input to output characteristics measure
+                if (func_id != 7)
+                {
+                    cat[1] = (byte)((func_id << 6) + (device_id << 3));
+                }
+                else
+                {
+                    cat[1] = (byte)(func_id << 6);
+                }
+
+                // Record seq
+                byte[] record;
+                // if length of the message exceeds 1024 byte, send 0x00, 0x01
+                if (payload_length <= 1024) { record = new byte[] { 0x00, 0x00 }; }
+                else { record = new byte[] { 0x00, 0x01 }; }
+
+                // Data byte length
+                byte[] data_length = new byte[2];
+                data_length[0] = (byte)(data.Length >> 8);
+                data_length[1] = (byte)(data.Length);
+
+                // CRC32
+                byte[] crc32 = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+
+                // postamble
+                byte[] postamble = new byte[] { 0x55, 0xAA, 0xAA, 0x55 };
+
+                serialport.Write(preamble, 0, preamble.Length);
+                serialport.Write(length, 0, length.Length);
+                serialport.Write(seq, 0, seq.Length);
+                serialport.Write(dest, 0, dest.Length);
+                serialport.Write(version, 0, version.Length);
+                serialport.Write(cat, 0, cat.Length);
+                serialport.Write(record, 0, record.Length);
+                serialport.Write(data_length, 0, data_length.Length);
+                if (func_id != 5) serialport.Write(data, 0, data.Length);
+                serialport.Write(crc32, 0, crc32.Length);
+                serialport.Write(postamble, 0, postamble.Length);
             }
-            else
-            {
-                cat[1] = (byte)(func_id << 6);
-            }
 
-            // Record seq
-            byte[] record;
-            // if length of the message exceeds 1024 byte, send 0x00, 0x01
-            if (payload_length <= 1024) { record = new byte[] { 0x00, 0x00 }; }
-            else { record = new byte[] { 0x00, 0x01 }; }
-
-            // Data byte length
-            byte[] data_length = new byte[2];
-            data_length[0] = (byte)(data.Length >> 8);
-            data_length[1] = (byte)(data.Length);
-
-            // CRC32
-            byte[] crc32 = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-
-            // postamble
-            byte[] postamble = new byte[] { 0x55, 0xAA, 0xAA, 0x55 };
-
-            serialport.Write(preamble, 0, preamble.Length);
-            serialport.Write(length, 0, length.Length);
-            serialport.Write(seq, 0, seq.Length);
-            serialport.Write(dest, 0, dest.Length);
-            serialport.Write(version, 0, version.Length);
-            serialport.Write(cat, 0, cat.Length);
-            serialport.Write(record, 0, record.Length);
-            serialport.Write(data_length, 0, data_length.Length);
-            if (func_id != 5) serialport.Write(data, 0, data.Length);
-            serialport.Write(crc32, 0, crc32.Length);
-            serialport.Write(postamble, 0, postamble.Length);
+            //telRead_btn.ClearValue(Button.BackgroundProperty);
 
             //serialport.Close();
             //if (!serialport.IsOpen) { MessageBox.Show("Serial Port successfully closed.", "Message"); }
@@ -373,6 +394,7 @@ namespace Console2
         private void UpdateText(String msg)
         {
             msgbox.AppendText(msg);
+            msgbox.ScrollToEnd();
         }
 
         //
