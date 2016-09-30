@@ -23,9 +23,9 @@
                     <Label Content="Country code: " Height="28" HorizontalAlignment="Left" Margin="26,20,0,0" Name="label1" VerticalAlignment="Top" />
                     <Label Content="Group code:" Height="28" HorizontalAlignment="Left" Margin="26,46,0,0" Name="label2" VerticalAlignment="Top" />
                     <Label Content="Position code:" Height="28" HorizontalAlignment="Left" Margin="26,72,0,0" Name="label3" VerticalAlignment="Top" />
-                    <TextBox Height="20" HorizontalAlignment="Left" Margin="117,24,0,00" Name="countrycode_txt" VerticalAlignment="Top" Width="114" />
-                    <TextBox Height="20" HorizontalAlignment="Left" Margin="117,50,0,0" Name="groupcode_txt" VerticalAlignment="Top" Width="114" />
-                    <TextBox Height="20" HorizontalAlignment="Left" Margin="117,76,0,0" Name="poscode_txt" VerticalAlignment="Top" Width="114" />
+                    <TextBox Height="20" Text="887" TextAlignment="Center" HorizontalAlignment="Left" Margin="117,24,0,00" Name="countrycode_txt" VerticalAlignment="Top" Width="114" />
+                    <TextBox Height="20" TextAlignment="Center" HorizontalAlignment="Left" Margin="117,50,0,0" Name="groupcode_txt" VerticalAlignment="Top" Width="114" />
+                    <TextBox Height="20" TextAlignment="Center" HorizontalAlignment="Left" Margin="117,76,0,0" Name="poscode_txt" VerticalAlignment="Top" Width="114" />
                     <Grid HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

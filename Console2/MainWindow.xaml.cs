@@ -27,7 +27,7 @@ namespace Console2
         int manufacturer_id = 0; // 0 - Shinwoo, 1 - Bombardier, 2 - Siemens
         int device_id = 0; // 0 - Balise, 2 - LEU
         int func_id = 0; // 0 - ACK, 1 - NAK, 2 - Telegram Download, 3 - Telegram Upload, 5 - Telegram Upload Request
-                         // 7 - Baslise Input to Output characteristics
+        // 7 - Baslise Input to Output characteristics
 
         public MainWindow()
         {
@@ -105,7 +105,7 @@ namespace Console2
             position_gpbox.Visibility = Visibility.Hidden;
             manufacturer_id = 3;
         }
-        
+
         // ----- CHECKS IF BALISE IS SELECTED ----- //
         private void pos_balise_Checked(object sender, RoutedEventArgs e)
         {
@@ -176,7 +176,7 @@ namespace Console2
                 fStream.Close();
             }
         }
-        
+
         private void msgClear_btn_Click(object sender, RoutedEventArgs e)
         {
             msgbox.Document.Blocks.Clear();
@@ -195,13 +195,13 @@ namespace Console2
             //serialportbox.Items.Add(value);
             //serialportbox.Items.SortDescriptions.Add(
             //    new System.ComponentModel.SortDescription("", System.ComponentModel.ListSortDirection.Ascending));
-            
+
             // Connect the serial port.
             serialport = new SerialPort(value, 38400, Parity.None, 8, StopBits.One);
             serialport.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
             serialport.Open();
 
-            if (serialport.IsOpen) 
+            if (serialport.IsOpen)
             {
                 serialport_open = true;
                 MessageBox.Show("Connection Open", "Message");
@@ -249,15 +249,22 @@ namespace Console2
 
             byte[] data = openFile(filter);
 
-            BaliseTelegramDownloadProtocol(data);
+            if (data != null) BaliseTelegramDownloadProtocol(data);
         }
 
         private void telRead_btn_Click(object sender, RoutedEventArgs e)
         {
-            telRead_btn.Background = Brushes.DarkBlue;
-            func_id = 5;
-            byte[] data = new byte[] { };
-            BaliseTelegramProtocol(data);
+            if (telRead_btn.Background != Brushes.DarkBlue)
+            {
+                telRead_btn.Background = Brushes.DarkBlue;
+                func_id = 5;
+                byte[] data = new byte[] { };
+                BaliseTelegramProtocol(data);
+            }
+            else
+            {
+                telRead_btn.ClearValue(Button.BackgroundProperty);
+            }
         }
 
         private void tempinout_btn_Click(object sender, RoutedEventArgs e)
@@ -288,11 +295,11 @@ namespace Console2
 
         public void BaliseTelegramProtocol(byte[] data)
         {
-            if (!serialport_open || !serialport.IsOpen || serialport == null) 
-            { 
+            if (!serialport_open || !serialport.IsOpen || serialport == null)
+            {
                 MessageBox.Show("Recheck Serial Port Connection", "Warning", MessageBoxButton.OK);
                 telRead_btn.ClearValue(Button.BackgroundProperty);
-                    //System.Windows.Media.LinearGradientBrush;
+                //System.Windows.Media.LinearGradientBrush;
             }
 
             else if (serialport.IsOpen)
@@ -365,7 +372,21 @@ namespace Console2
                 serialport.Write(cat, 0, cat.Length);
                 serialport.Write(record, 0, record.Length);
                 serialport.Write(data_length, 0, data_length.Length);
-                if (func_id != 5) serialport.Write(data, 0, data.Length);
+                
+                if (func_id != 5)
+                {
+                    // If length of data is greater than 1024 byte, divide message
+                    if (data.Length < 1024) { serialport.Write(data, 0, data.Length); }
+                    else
+                    {
+                        int cnt = data.Length / 1024 + 1;
+                        for (int i = 0; i < cnt; i++)
+                        {
+                            if (i != (cnt - 1)) { serialport.Write(data, cnt * i, 1024); }
+                            else { serialport.Write(data, cnt * i, data.Length - ((cnt - 1) * 1024)); }
+                        }
+                    }
+                }
                 serialport.Write(crc32, 0, crc32.Length);
                 serialport.Write(postamble, 0, postamble.Length);
             }
@@ -377,24 +398,360 @@ namespace Console2
         }
 
         public void IsSentCorrectly()
-        { 
+        {
 
         }
 
         public delegate void UpdateTextCallback(String msg);
 
+        const int PREAMBLE_WAIT = 0; const int PAYLOAD_LEN_WAIT = 1; const int PAYLOAD_WAIT = 2;
+        const int CRC_WAIT = 3; const int POSTAMBLE_WAIT = 4; const int CONSOLE_FRM_RCV_DONE = 5;
+        const int CONSOLE_RCV_RST = 6;
+        const int MAX_CONSOLE_PAYLOAD_SIZE = 2048;
+
+        int console_rcv_stage = CONSOLE_RCV_RST; // console_rcv_stage = CONSOLE_RCV_RST;
+        int buf_cnt = -1;
+        byte[] buf;
+
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
-            msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), sp.ReadExisting());
-            //String indata = sp.ReadExisting();
-            //msgbox.AppendText(indata);
+            
+            if(buf_cnt == -1 || buf_cnt >= buf.Length)
+            {
+                buf = new byte[sp.BytesToRead];
+                sp.Read(buf, 0, sp.BytesToRead);
+                buf_cnt = 0;
+            }
+
+            while (buf_cnt < buf.Length)
+            {
+                ConsolePktRcvAutomata();
+
+                if (console_rcv_stage == CONSOLE_FRM_RCV_DONE)
+                {
+                    if (errCode != 0) MessageBox.Show("Data Received Error", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    else errCode = ConsoleCmdProcess();
+                    buf_cnt = -1;
+                    console_rcv_stage = CONSOLE_RCV_RST;
+                    break;
+                }
+            }
+            // Data Receive Super Loop
+            //int bytes = sp.BytesToRead;
+            //byte[] buffer = new byte[bytes];
+            //sp.Read(buffer, 0, bytes);
+
+            //msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), System.Text.Encoding.ASCII.GetString(buffer));
+
         }
 
         private void UpdateText(String msg)
         {
             msgbox.AppendText(msg);
             msgbox.ScrollToEnd();
+        }
+
+        //
+        //  DATA RECEIVE HANDLER
+        //
+        UInt32 sign32, yourSeq, mySeq, category, yourRecSeq, yourRecLen;
+        UInt32 errCode = 0;
+        byte[] ConsolePayload = new byte[2048];
+        byte device, manufacturer;
+        int rcvCnt, xPayLoad, crc;
+        int console_payLoadCnt = 0; 
+
+        private void ConsolePktRcvAutomata()
+        {
+            int keep = 1;
+            UInt32 t;
+
+            while (keep != 0)
+            {
+                keep = 0;
+
+                switch (console_rcv_stage)
+                {
+                    case PREAMBLE_WAIT:
+                        if (buf_cnt >= buf.Length) break;
+
+                        keep++;
+                        sign32 <<= 8;
+                        sign32 |= buf[buf_cnt];
+                        buf_cnt++;
+
+                        if (sign32 == 0xaa5555aa)
+                        {
+                            rcvCnt = 4;
+                            console_payLoadCnt = 0;
+                            console_rcv_stage = PAYLOAD_LEN_WAIT;
+                        }
+                        break;
+
+                    case PAYLOAD_LEN_WAIT:
+                        if (buf_cnt >= buf.Length) break;
+
+                        keep++;
+                        console_payLoadCnt <<= 8;
+                        console_payLoadCnt |= buf[buf_cnt];
+                        buf_cnt++;
+                        if (--rcvCnt == 0)
+                        {
+                            xPayLoad = 0;
+                            console_rcv_stage = PAYLOAD_WAIT;
+                        }
+                        break;
+
+                    case PAYLOAD_WAIT:
+                        if (buf_cnt >= buf.Length) break;
+
+                        keep++;
+                        ConsolePayload[xPayLoad++] = buf[buf_cnt];
+                        buf_cnt++;
+                        if (xPayLoad >= console_payLoadCnt)
+                        {
+                            rcvCnt = 4;
+                            crc = 0;
+                            console_rcv_stage = CRC_WAIT;
+                        }
+                        else if (xPayLoad >= MAX_CONSOLE_PAYLOAD_SIZE)
+                        {
+                            console_rcv_stage = CONSOLE_RCV_RST;
+                        }
+                        break;
+
+                    case CRC_WAIT:
+                        if (buf_cnt >= buf.Length) break;
+
+                        keep++;
+                        crc <<= 8;
+                        crc |= buf[buf_cnt];
+                        buf_cnt++;
+                        if (--rcvCnt == 0)
+                        {
+                            rcvCnt = 4;
+                            sign32 = 0;
+                            console_rcv_stage = POSTAMBLE_WAIT;
+                        }
+                        break;
+
+                    case POSTAMBLE_WAIT:
+                        if (buf_cnt >= buf.Length) break;
+
+                        keep++;
+                        sign32 <<= 8;
+                        sign32 |= buf[buf_cnt];
+                        buf_cnt++;
+
+                        if (--rcvCnt == 0)
+                        {
+                            if (sign32 == 0x55aaaa55)
+                            {
+                                yourSeq = getWord16(ConsolePayload, 0);
+                                t = getWord16(ConsolePayload, 4);
+                                category = getWord32(ConsolePayload, 9);
+                                yourRecSeq = getWord16(ConsolePayload, 13);
+                                yourRecLen = getWord16(ConsolePayload, 15);
+
+                                if (console_payLoadCnt != getWord16(ConsolePayload, 15) + 17) errCode = 1; // length fail
+                                else if (mySeq != t && t != 0) errCode = 2; // 상대 seq unknown
+                                else if (ConsolePayload[8] != 0) errCode = 3; // not supported protocol version
+                                else errCode = 0;
+                            }
+                            else errCode = 10; // packet frame form fail
+                            console_rcv_stage = CONSOLE_FRM_RCV_DONE;
+                        }
+                        break;
+
+                    case CONSOLE_FRM_RCV_DONE:
+                        break;
+
+                    case CONSOLE_RCV_RST:
+                        sign32 = 0;
+                        console_rcv_stage = PREAMBLE_WAIT;
+                        break;
+                }
+            }
+        }
+
+        UInt32 ConsoleCmdProcess()
+        {
+            byte type, function;
+            UInt32 err;
+
+            type = (byte)(category >> 30 & 0x3);
+            manufacturer = (byte)(category >> 27 & 0x7);
+            function = (byte)(category >> 22 & 0x1f);
+            device = (byte)(category >> 19 & 0x7);
+            err = 0;
+
+            if (type != 0) return 4; // category type mismatch
+
+            switch (function)
+            {
+                case 0:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------ACK--------\r\n");
+                    break;
+
+                case 1:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------NAK--------\r\n");
+                    break;  
+
+                case 2:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Telegram Download--------\r\n");
+                    //err = TelegramDownload();
+                    err = 11;
+                    break;
+
+                case 3:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Telegram Upload--------\r\n");
+                    err = 8;
+                    break;
+
+                case 4:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Progress--------\r\n");
+                    err = 8;
+                    break;
+
+                case 5:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Telegram Upload Request--------\r\n");
+
+                    if (device != 0) err = 5; // category device mismatch
+                    else if (yourRecSeq != 0) err = 6; // record seq# mismatch
+                    else if (yourRecLen != 0) err = 7; // record length fail
+                    //else err = TelegramUploadEnable();
+                    else err = 11;
+                    break;
+
+                case 6:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------A4 Output Level Control--------\r\n");
+
+                    if (yourSeq != 0) err = 6; // record Seq# mismatch
+                    else if (yourRecLen != 2) err = 7; // record length fail
+                    //else err = A4LevelSet(getWord16(ConsolePayload, 17)); // power level
+                    else err = 0;
+                    break;
+
+                case 7:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Balise Input to Output Characteristics Measure Start--------\r\n");
+
+                    if (yourRecSeq != 0) err = 6;     //record sequence# mismatch
+                    else if (yourRecLen != 6) err = 7;     //record length fail
+                    else
+                        err = 0;
+                        //err = IOmeasureStart(getWord16(ConsolePayload, 17),   //min
+                        //    getWord16(ConsolePayload, 19),   //max
+                        //    ConsolePayload[21],               //step
+                        //    ConsolePayload[22]);             //interval
+                    break; 
+
+                case 9:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Measure Data Receive--------\r\n");
+                    err = 8;
+                    break;
+
+                case 10:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Process Loop Break--------\r\n");
+
+                    if (yourRecSeq != 0) err = 6; // record sequence # mismatch
+                    else if (yourRecLen != 0) err = 7; // record length fail
+                    //else err = HALT();
+                    else err = 0;
+                    break;
+
+                default:
+                    msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Undefined category--------\r\n");
+                    err = 9;
+                    break;
+
+            }
+
+            return err;
+        }
+
+        UInt32 TelegramDownload()
+        {
+            UInt32 err = 0;
+
+            if (device == 0) // BALISE
+            {
+                switch (manufacturer)
+                {
+                    case 0: // Shinwoo
+                        //err = ShinWoo_Balise_download();
+                        err = 11;
+                        break;
+
+                    case 1: // Bombardier
+                        err = 11;
+                        break;
+
+                    case 2: // Simens
+                        err = 11;
+                        break;
+
+                    case 3: // Thales
+                        err = 11;
+                        break;
+
+                    default:
+                        err = 11;
+                        break;
+                }
+            }
+            else if(device == 1) // LEU
+            {
+                switch (manufacturer)
+                {
+                    case 0: // shinwoo
+                        //err = ShinWoo_LEU_download();
+                        err = 11;
+                        break;
+
+                    case 1: // Bombardier
+                        err = 11;
+                        break;
+
+                    case 2: // Simens
+                        err = 11;
+                        break;
+
+                    case 3: // Thales
+                        err = 11;
+                        break;
+
+                    default:
+                        err = 11;
+                        break;
+                }
+            }
+            else err = 12;
+            return err;
+        }
+
+        UInt16 getWord16(byte[] buf, int index)
+        {
+            UInt16 result;
+
+            result = buf[index];
+            result <<= 8;
+            result += buf[index+1];
+            return result;
+        }
+
+        UInt32 getWord32(byte[] buf, int index)
+        {
+            UInt32 result;
+
+            result = buf[index];
+            result <<= 8;
+            result += buf[index + 1];
+            result <<= 8;
+            result += buf[index + 2];
+            result <<= 8;
+            result += buf[index + 3];
+            return result;
         }
 
         //
@@ -406,11 +763,13 @@ namespace Console2
             openFile.Filter = filter;
 
             int size;
-            byte[] data; 
+            byte[] data;
 
             // Only read in data if user selects a file and presses "Open".
             if (openFile.ShowDialog() == true)
             {
+                if (openFile.FileName == null) { return null; }
+
                 using (FileStream stream = new FileStream(openFile.FileName, FileMode.Open, FileAccess.Read))
                 {
                     size = (int)stream.Length;
@@ -427,7 +786,7 @@ namespace Console2
         //public static extern IntPtr Separate(byte[] src, int clen);
         //public static extern int Separate(int src, int clen);
 
-        [DllImport("TelegramSeparation.dll", EntryPoint="Separate", CallingConvention=CallingConvention.Cdecl)]
+        [DllImport("TelegramSeparation.dll", EntryPoint = "Separate", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Separate(byte[] src, int clen);
 
         private void upload_btn_Click(object sender, RoutedEventArgs e)
@@ -464,7 +823,7 @@ namespace Console2
                 0x0E,0xEB,0x90,0x31,0x2B,0xF9,0x9E,0x66,0x35,0x8D,0x7A,0xBC,0x25,0x5A,0x10,0x3B,    //29 
                 0x46,0x97,0x37,0xE0,0xEE,0x15,0x2B,0x57,0xB4,0x9D,0xE4,0xF9,0xC7,0xEC,0xE6,0x06     //30 
             };
-            
+
             /*
             int size = Marshal.SizeOf(upLoadstream[0]) * upLoadstream.Length;
             IntPtr pnt = Marshal.AllocHGlobal(size);
@@ -479,9 +838,9 @@ namespace Console2
                 // Marshal.FreeHGlobal(pnt);
             }
             //============================*/
-            
+
             IntPtr ptr;
-            
+
             ptr = Separate(upLoadstream, 480);
             String result = PtrToStringAscii(ptr);
             msgbox.AppendText(result);
