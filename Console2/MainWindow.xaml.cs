@@ -316,17 +316,18 @@ namespace Console2
                     if (sendOffset < data.Length) last = false;     //마지막 record가 아님.
                     BaliseTelegramProtocol(subBlock, last);
 
-                    while (echoBack != echoACK)
-                    {
-                        wait(1.0);
-                    }
-
                     myRecSeq++;
+
                     /*
                     echoBack == echoACK 가 될때까지 기다린다.
                     test는 MessageBox 넣어서 했음.
                     MessageBox.Show("keep", "Warning", MessageBoxButton.OKCancel);
                     */
+
+                    while (echoBack != echoACK)
+                    {
+                        wait(0.5);
+                    }
                 }
             }
             //---- single record
@@ -446,8 +447,7 @@ namespace Console2
         }
 
         public delegate void UpdateTextCallback(String msg);
-        public delegate void UpdateEchoCallback(int a);
-
+        
         const int PREAMBLE_WAIT = 0; const int PAYLOAD_LEN_WAIT = 1; const int PAYLOAD_WAIT = 2;
         const int CRC_WAIT = 3; const int POSTAMBLE_WAIT = 4; const int CONSOLE_FRM_RCV_DONE = 5;
         const int CONSOLE_RCV_RST = 6;
@@ -493,11 +493,6 @@ namespace Console2
 
         }
 
-        private void UpdateEcho(int a)
-        {
-            echoBack = a;
-            MessageBox.Show("Echo Updated", "Warning", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-        }
         private void UpdateText(String msg)
         {
             msgbox.AppendText(msg);
@@ -645,13 +640,11 @@ namespace Console2
                 case 0:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------ACK--------\r\n");
                     echoBack = echoACK;
-                    //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateEchoCallback(this.UpdateEcho), echoACK);
                     break;
 
                 case 1:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------NAK--------\r\n");
                     echoBack = echoNAK;
-                    //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateEchoCallback(this.UpdateEcho), echoNAK);
                     break;
 
                 case 2:
