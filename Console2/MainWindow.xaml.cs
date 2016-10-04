@@ -13,6 +13,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using System.IO.Ports;
+using System.Windows.Threading;
+using System.Threading;
+
 using Microsoft.Win32;
 
 using System.Runtime.InteropServices;
@@ -28,6 +31,11 @@ namespace Console2
         int device_id = 0; // 0 - Balise, 2 - LEU
         int func_id = 0; // 0 - ACK, 1 - NAK, 2 - Telegram Download, 3 - Telegram Upload, 5 - Telegram Upload Request
         // 7 - Baslise Input to Output characteristics
+        int myRecSeq = 0;
+        int echoBack = 0;
+
+        const int echoACK = 0x06;
+        const int echoNAK = 0x15;
 
         public MainWindow()
         {
@@ -248,7 +256,6 @@ namespace Console2
             }
 
             byte[] data = openFile(filter);
-
             if (data != null) BaliseTelegramDownloadProtocol(data);
         }
 
@@ -258,13 +265,15 @@ namespace Console2
             {
                 telRead_btn.Background = Brushes.DarkBlue;
                 func_id = 5;
-                byte[] data = new byte[] { };
-                BaliseTelegramProtocol(data);
             }
             else
             {
                 telRead_btn.ClearValue(Button.BackgroundProperty);
+                func_id = 10;       //telegram upload terminate
             }
+            byte[] data = new byte[] { };
+            myRecSeq = 0;
+            BaliseTelegramProtocol(data, true);
         }
 
         private void tempinout_btn_Click(object sender, RoutedEventArgs e)
@@ -283,17 +292,51 @@ namespace Console2
             data[4] = (byte)(numSteps);
             data[5] = (byte)(timeout);
 
-            BaliseTelegramProtocol(data);
+            myRecSeq = 0;
+            BaliseTelegramProtocol(data, true);
         }
 
         // Sends downloaded telegram message via serial port.
         public void BaliseTelegramDownloadProtocol(byte[] data)
         {
-            BaliseTelegramProtocol(data);
-            IsSentCorrectly();
+            myRecSeq = 0;
+            //---- multi records
+            if (data.Length > 1024)
+            {
+                int sendOffset = 0;
+                while (sendOffset < data.Length)
+                {
+                    int sendCnt = data.Length - sendOffset;
+                    if (sendCnt > 1024) sendCnt = 1024;
+                    byte[] subBlock = new byte[sendCnt];
+                    Buffer.BlockCopy(data, sendOffset, subBlock, 0, sendCnt);
+                    sendOffset += sendCnt;
+                    bool last = true;
+                    echoBack = 0;
+                    if (sendOffset < data.Length) last = false;     //마지막 record가 아님.
+                    BaliseTelegramProtocol(subBlock, last);
+
+                    while (echoBack != echoACK)
+                    {
+                        wait(1.0);
+                    }
+
+                    myRecSeq++;
+                    /*
+                    echoBack == echoACK 가 될때까지 기다린다.
+                    test는 MessageBox 넣어서 했음.
+                    MessageBox.Show("keep", "Warning", MessageBoxButton.OKCancel);
+                    */
+                }
+            }
+            //---- single record
+            else
+            {
+                BaliseTelegramProtocol(data, true);
+            }
         }
 
-        public void BaliseTelegramProtocol(byte[] data)
+        public void BaliseTelegramProtocol(byte[] data, bool last)
         {
             if (!serialport_open || !serialport.IsOpen || serialport == null)
             {
@@ -346,12 +389,17 @@ namespace Console2
                 {
                     cat[1] = (byte)(func_id << 6);
                 }
+                /*
+                 [b18] End of Record --> cat[1], b2
+                   0: Last Record
+                   1: 다음 Record로 이어짐
+                */
+                if (last == false) cat[1] |= (byte)(1 << 2);
 
                 // Record seq
-                byte[] record;
-                // if length of the message exceeds 1024 byte, send 0x00, 0x01
-                if (payload_length <= 1024) { record = new byte[] { 0x00, 0x00 }; }
-                else { record = new byte[] { 0x00, 0x01 }; }
+                byte[] record = new byte[2];
+                record[0] = (byte)(myRecSeq >> 8);
+                record[1] = (byte)myRecSeq;
 
                 // Data byte length
                 byte[] data_length = new byte[2];
@@ -372,7 +420,7 @@ namespace Console2
                 serialport.Write(cat, 0, cat.Length);
                 serialport.Write(record, 0, record.Length);
                 serialport.Write(data_length, 0, data_length.Length);
-                
+
                 if (func_id != 5)
                 {
                     // If length of data is greater than 1024 byte, divide message
@@ -397,12 +445,8 @@ namespace Console2
             //if (!serialport.IsOpen) { MessageBox.Show("Serial Port successfully closed.", "Message"); }
         }
 
-        public void IsSentCorrectly()
-        {
-
-        }
-
         public delegate void UpdateTextCallback(String msg);
+        public delegate void UpdateEchoCallback(int a);
 
         const int PREAMBLE_WAIT = 0; const int PAYLOAD_LEN_WAIT = 1; const int PAYLOAD_WAIT = 2;
         const int CRC_WAIT = 3; const int POSTAMBLE_WAIT = 4; const int CONSOLE_FRM_RCV_DONE = 5;
@@ -416,11 +460,13 @@ namespace Console2
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
-            
-            if(buf_cnt == -1 || buf_cnt >= buf.Length)
+            int length;
+
+            if (buf_cnt == -1 || buf_cnt >= buf.Length)
             {
-                buf = new byte[sp.BytesToRead];
-                sp.Read(buf, 0, sp.BytesToRead);
+                length = sp.BytesToRead;
+                buf = new byte[length];
+                sp.Read(buf, 0, length);
                 buf_cnt = 0;
             }
 
@@ -443,9 +489,15 @@ namespace Console2
             //sp.Read(buffer, 0, bytes);
 
             //msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), System.Text.Encoding.ASCII.GetString(buffer));
+            
 
         }
 
+        private void UpdateEcho(int a)
+        {
+            echoBack = a;
+            MessageBox.Show("Echo Updated", "Warning", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        }
         private void UpdateText(String msg)
         {
             msgbox.AppendText(msg);
@@ -460,7 +512,7 @@ namespace Console2
         byte[] ConsolePayload = new byte[2048];
         byte device, manufacturer;
         int rcvCnt, xPayLoad, crc;
-        int console_payLoadCnt = 0; 
+        int console_payLoadCnt = 0;
 
         private void ConsolePktRcvAutomata()
         {
@@ -592,11 +644,15 @@ namespace Console2
             {
                 case 0:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------ACK--------\r\n");
+                    echoBack = echoACK;
+                    //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateEchoCallback(this.UpdateEcho), echoACK);
                     break;
 
                 case 1:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------NAK--------\r\n");
-                    break;  
+                    echoBack = echoNAK;
+                    //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateEchoCallback(this.UpdateEcho), echoNAK);
+                    break;
 
                 case 2:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Telegram Download--------\r\n");
@@ -640,11 +696,11 @@ namespace Console2
                     else if (yourRecLen != 6) err = 7;     //record length fail
                     else
                         err = 0;
-                        //err = IOmeasureStart(getWord16(ConsolePayload, 17),   //min
-                        //    getWord16(ConsolePayload, 19),   //max
-                        //    ConsolePayload[21],               //step
-                        //    ConsolePayload[22]);             //interval
-                    break; 
+                    //err = IOmeasureStart(getWord16(ConsolePayload, 17),   //min
+                    //    getWord16(ConsolePayload, 19),   //max
+                    //    ConsolePayload[21],               //step
+                    //    ConsolePayload[22]);             //interval
+                    break;
 
                 case 9:
                     msgbox.Dispatcher.Invoke(new UpdateTextCallback(this.UpdateText), "--------Measure Data Receive--------\r\n");
@@ -700,7 +756,7 @@ namespace Console2
                         break;
                 }
             }
-            else if(device == 1) // LEU
+            else if (device == 1) // LEU
             {
                 switch (manufacturer)
                 {
@@ -736,7 +792,7 @@ namespace Console2
 
             result = buf[index];
             result <<= 8;
-            result += buf[index+1];
+            result += buf[index + 1];
             return result;
         }
 
@@ -859,6 +915,19 @@ namespace Console2
             byte[] array = new byte[len];
             Marshal.Copy(ptr, array, 0, len);
             return System.Text.Encoding.ASCII.GetString(array);
+        }
+
+        public static void wait(double seconds)
+        {
+            var frame = new DispatcherFrame();
+
+            new Thread((ThreadStart)(() =>
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(seconds));
+                frame.Continue = false;
+            })).Start();
+
+            Dispatcher.PushFrame(frame);
         }
     }
 

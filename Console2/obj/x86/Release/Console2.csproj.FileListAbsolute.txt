@@ -9,3 +9,4 @@ C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Release\Console2.
 C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Release\Console2.csproj.GenerateResource.Cache
 C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Release\Console2.exe
 C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\obj\x86\Release\Console2.pdb
+C:\Users\john\Desktop\mhSeo\Projects\Console2\Console2\bin\Release\Console2.exe.config
