@@ -43,7 +43,7 @@ namespace Console2
 
         byte[] NULL_DATA = new byte[] { };
 
-        const int SIZE_fileBuffer = 0x1000;   //64K bytes buffer
+        const int SIZE_fileBuffer = 0x10000;   //64K bytes buffer
         byte[] fileBuffer = new byte[SIZE_fileBuffer];
         int xfileBuffer = 0;
 
@@ -58,6 +58,15 @@ namespace Console2
             progressLabel.Text = String.Format("{0}%", progressBar.Value);
             serialportbox.Text = Properties.Settings.Default.ComportString;
         }
+
+        public delegate void UpdateProgressValueCallback(int value);
+
+        private void UpdateProgressValue(int value)
+        {
+            progressBar.Value = value;
+        }
+
+
 
         private void Init_combobox()
         {
@@ -379,6 +388,7 @@ namespace Console2
             func_id = 0;        //ACK
             BaliseTelegramSend(NULL_DATA, true);
         }
+
         public void sendNAK()
         {
             func_id = 1;        //NAK
@@ -727,6 +737,7 @@ namespace Console2
 
                     if ((cat & (UInt32)(1 << 18)) == 0) //last record
                     {
+                        progressBar.Dispatcher.Invoke(new UpdateProgressValueCallback(this.UpdateProgressValue), 100);
                         LEUuploadSave();
                     }
                     err = 0;
@@ -743,7 +754,7 @@ namespace Console2
                     if ((percentage & 1 << 14) == 0)  //percentage 표시를 사용함.
                     {
                         percentage &= 0x3fff;
-                        progressBar.Value = (int)(percentage / 10);
+                        progressBar.Dispatcher.Invoke(new UpdateProgressValueCallback(this.UpdateProgressValue), (int)(percentage / 10));
                     }
                     if (rcvCnt > 2)
                     {
@@ -903,24 +914,72 @@ namespace Console2
         {
             SaveFileDialog saveFileDlg = new SaveFileDialog();
             saveFileDlg.FileOk += CheckIfFileHasCorrectExtension;
-            saveFileDlg.Filter = "LEU File (*.LEU.EEP, *.LEU.EEP.TXT)|*.LEU.EEP; *.LEU.EEP.TXT";
+            saveFileDlg.Filter = "LEU File (*.LEU.EEP, *.LEU.TXT)|*.LEU.EEP; *.LEU.TXT";
 
             if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName.Length > 0)
             {
                 var extension = System.IO.Path.GetExtension(saveFileDlg.FileName);
 
+                byte[] writeBuf = new byte[xfileBuffer];
+                Buffer.BlockCopy(fileBuffer, 0, writeBuf, 0, xfileBuffer);
+
                 switch (extension.ToLower())
                 {
                     case ".eep":
-                        File.WriteAllBytes(saveFileDlg.FileName, fileBuffer);
+                        File.WriteAllBytes(saveFileDlg.FileName, writeBuf);
                         break;
 
                     case ".txt":
-                        // TODO: fileBuffer[]를 HEXASC로 변환하여 write 하여야 함.
+                        cvHexascForm(writeBuf);
+                        byte[] writeBuf2nd = new byte[xfileBuffer];
+                        Buffer.BlockCopy(fileBuffer, 0, writeBuf2nd, 0, xfileBuffer);
+                        File.WriteAllBytes(saveFileDlg.FileName, writeBuf2nd);
                         break;
                 }
             }
         }
+
+        public void cvHexascForm(byte[] sourceBuf)
+        {
+            int sSz = sourceBuf.Length;
+            int xS = 0;
+            int ichr;
+            int colCnt = 16;
+            xfileBuffer = 0;
+
+            while (xS < sSz)
+            {
+                ichr = cvHEXASC(sourceBuf[xS++]);
+                fileBuffer[xfileBuffer++] = (byte)(ichr >> 8);
+                fileBuffer[xfileBuffer++] = (byte)ichr;
+                fileBuffer[xfileBuffer++] = (byte)'.';
+
+                if (--colCnt == 0)
+                {
+                    fileBuffer[xfileBuffer++] = (byte)(0x0d);
+                    fileBuffer[xfileBuffer++] = (byte)(0x0a);
+                    colCnt = 16;
+                }
+            }
+            fileBuffer[xfileBuffer++] = (byte)(0x0d);
+            fileBuffer[xfileBuffer++] = (byte)(0x0a);
+        }
+
+        public int cvHEXASC(byte chr)
+        {
+            int i, j;
+
+            i = (chr >> 4) & 0x0f;
+            if (i > 9) i = i - 10 + 'a';
+            else i += '0';
+
+            j = chr & 0x0f;
+            if (j > 9) j = j - 10 + 'a';
+            else j += '0';
+
+            return i << 8 | j;
+        }
+
 
         // Check File extensions when saving
         void CheckIfFileHasCorrectExtension(object sender, System.ComponentModel.CancelEventArgs e)
@@ -930,7 +989,8 @@ namespace Console2
             if (!(System.IO.Path.GetExtension(sv.FileName).ToLower() == ".eep" || System.IO.Path.GetExtension(sv.FileName).ToLower() == ".txt"))
             {
                 e.Cancel = true;
-                MessageBox.Show("Please use the following extensions: *.LEU.EEP or *.LEU.EEP.TXT", "Warning");
+                MessageBox.Show(".eep 또는 .txt로 끝나는 파일이름을 사용하세오", "Warning");
+                //MessageBox.Show("Please use the following extensions: *.LEU.EEP or *.LEU.EEP.TXT", "Warning");
                 return;
             }
         }
@@ -1082,7 +1142,11 @@ namespace Console2
             Dispatcher.PushFrame(frame);
         }
 
-
+        private void msgDecode_btn_Click(object sender, RoutedEventArgs e)
+        {
+            DecodeWindow decodeWindow = new DecodeWindow();
+            decodeWindow.ShowDialog();
+        }
     }
 
     public static class RichTextBoxExtensions

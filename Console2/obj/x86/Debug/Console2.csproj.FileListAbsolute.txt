@@ -33,3 +33,5 @@ C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Consol
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.g.resources
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.Properties.Resources.resources
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.csproj.GenerateResource.Cache
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\DecodeWindow.baml
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\DecodeWindow.g.cs
