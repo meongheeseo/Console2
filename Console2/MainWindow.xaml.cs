@@ -182,6 +182,8 @@ namespace Console2
             countrycode_txt.Text = String.Empty;
             groupcode_txt.Text = String.Empty;
             poscode_txt.Text = String.Empty;
+
+            DecodeStart("<Transport_Tele>61 99 AB 46 10 4F 31 1A 52 C1 EE D4 B6 A7 C1 E5 52 46 11 F3 DC 6E 8A AB D5 A0 E7 3A 75 88 89 8B E6 E4 79 8A 21 E4 DE 37 5B 13 BB 6B CE C8 10 5D 1E 54 ED DB C9 CC 8E 8D 65 17 8A AF 0C D7 BF B5 17 BE 34 D3 8A B2 C0 F0 FA 19 04 AA 2C 4B 6E 2E 27 2D D3 E8 39 0F 66 42 93 28 52 85 46 ED 77 25 09 C7 A7 A4 65 B8 A9 18 28 F3 3C D0 E1 06 55 6D A1 92 90 13 9E 65 1D 53 70 30 23 71 AA 2A F7 2A </Transport_Tele>");
         }
 
         // ----- MESSAGEBOX SAVE & CLEAR FUNCTIONS ----- //
@@ -1029,9 +1031,30 @@ namespace Console2
 
         [DllImport("TelegramSeparation.dll", EntryPoint = "Separate", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Separate(byte[] src, int clen);
+        [DllImport("vcDecode.dll", EntryPoint = "OnDecode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr OnDecode(string input);
+
+        void DecodeStart(string encoded1023)
+        {
+            //string a = "<Transport_Tele>61 99 AB 46 10 4F 31 1A 52 C1 EE D4 B6 A7 C1 E5 52 46 11 F3 DC 6E 8A AB D5 A0 E7 3A 75 88 89 8B E6 E4 79 8A 21 E4 DE 37 5B 13 BB 6B CE C8 10 5D 1E 54 ED DB C9 CC 8E 8D 65 17 8A AF 0C D7 BF B5 17 BE 34 D3 8A B2 C0 F0 FA 19 04 AA 2C 4B 6E 2E 27 2D D3 E8 39 0F 66 42 93 28 52 85 46 ED 77 25 09 C7 A7 A4 65 B8 A9 18 28 F3 3C D0 E1 06 55 6D A1 92 90 13 9E 65 1D 53 70 30 23 71 AA 2A F7 2A </Transport_Tele>";
+            IntPtr ptr;
+
+            encoded1023 = Format1023Encoded(encoded1023); // need to format the string so dll will accept it
+
+            ptr = OnDecode(encoded1023);
+            String encoded830 = PtrToStringAscii(ptr);
+            if (encoded830 == "")
+            {
+                ptr = OnDecode(encoded1023);
+                encoded830 = PtrToStringAscii(ptr);
+            }
+            msgbox.AppendText(encoded830);
+            msgbox.ScrollToEnd();
+        }
 
         private void upload_btn_Click(object sender, RoutedEventArgs e)
         {
+            
             if (device_id == 0)     //Balise
             {
                 telReadProcess();
@@ -1090,7 +1113,7 @@ namespace Console2
             0x0E,0xEB,0x90,0x31,0x2B,0xF9,0x9E,0x66,0x35,0x8D,0x7A,0xBC,0x25,0x5A,0x10,0x3B,    //29 
             0x46,0x97,0x37,0xE0,0xEE,0x15,0x2B,0x57,0xB4,0x9D,0xE4,0xF9,0xC7,0xEC,0xE6,0x06     //30 
         };
-        */
+        
 
         /*
         int size = Marshal.SizeOf(upLoadstream[0]) * upLoadstream.Length;
@@ -1108,13 +1131,31 @@ namespace Console2
         //============================*/
         /*
         IntPtr ptr;
+        String result;
 
         ptr = Separate(upLoadstream, 480);
-        String result = PtrToStringAscii(ptr);
+        result = PtrToStringAscii(ptr);
+
+        if (result == "")
+        {
+            ptr = Separate(upLoadstream, 480);
+            result = PtrToStringAscii(ptr);
+        }
+
         msgbox.AppendText(result);
         msgbox.ScrollToEnd();
-    }
-        */
+    }*/
+
+        // Formats returned string of upload to format vcDecode.dll will accept.
+        private String Format1023Encoded(String input)
+        {
+            input = input.Replace(".", " ").Replace("          ", "").Replace("\n", "");
+            input = input.Substring(8, input.Length - 8 - 1);
+            input = string.Concat(string.Concat("<Transport_Tele>", input.Trim()), " </Transport_Tele>");
+
+            return input;
+        }
+
         private static String PtrToStringAscii(IntPtr ptr) // aPtr is nul-terminated
         {
             if (ptr == IntPtr.Zero)
