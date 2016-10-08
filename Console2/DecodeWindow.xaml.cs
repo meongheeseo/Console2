@@ -18,9 +18,12 @@ namespace Console2
     /// </summary>
     public partial class DecodeWindow : Window
     {
-        public DecodeWindow()
+        public DecodeWindow(String text)
         {
             InitializeComponent();
+
+            decode_textBox.Text = text;
+            decode_textBox.ScrollToEnd();
         }
     }
 }
