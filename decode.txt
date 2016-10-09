@@ -1,0 +1,12 @@
+vcDecode
+	OnDecode(String input)
+		- input - TelegramSeparation.dll 의 결과를 그냥 쓰면됨. Format1023Encodeed(String) 이 필요한 부분만 짜른다
+		- String Decode1023Start(String input) 이 OnDecode를 call하고, 처음에 발생하는 아무 result도 돌아오지 않는 케이스를 handle한다.
+		- msgbox에 result를 display하고 같은 string을 return한다.
+
+MsgDecode
+	OnMsgDecode(String input, ref int length)
+		- input -> Decode1023Start의 return value를 input으로 사용. Format830Encoded(String) 이 필요한 부분만 짜른다
+		- String (String input)이 OnMsgDecode()를 call한다. Dll이 보낸 message length와 진짜 읽어들인 length가 다르면 에러로 취급한다. While loop에 갖혀서 제대로 된 result가 돌아올때까지 OnMsgDecode를 call한다.
+		- PtrToStringKorean(IntPtr, int length)가 한글로 encoding을 바꿔주고, length가 같은지 체크한다.
+		- Result 를 string으로 return한다. Result는 new window에 display된다.
