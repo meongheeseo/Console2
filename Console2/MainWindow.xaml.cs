@@ -1030,26 +1030,25 @@ namespace Console2
         [DllImport("TelegramSeparation.dll", EntryPoint = "Separate", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Separate(byte[] src, int clen);
         [DllImport("vcDecode.dll", EntryPoint = "OnDecode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr OnDecode(string input);
+        public static extern void OnDecode(string input, [Out]IntPtr output);
         [DllImport("MsgDecode.dll", EntryPoint = "OnMsgDecode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr OnMsgDecode(string input, ref int length);
+        public static extern void OnMsgDecode(string input, ref int length, [Out]IntPtr output);
 
         String Decode830Start(string encoded830)
         {
             int length = 0;
-            encoded830 = "<User_Tele>90 02 00 6E E6 E8 41 50 36 20 B3 46 E7 E2 82 0A 98 6E 76 28 31 04 7A 80 07 FE 30 5B E0 54 A0 57 60 5A E4 00 00 50 AA 06 64 00 04 04 41 7F 40 21 46 5F E3 68 2A 90 00 04 80 20 02 12 80 03 E8 30 00 3E 82 C0 03 25 FE 07 F8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 </User_Tele>";
-
+            IntPtr output = Marshal.AllocHGlobal(10000);
+            
+            //encoded830 = "<User_Tele>90 02 00 6E E6 E8 41 50 36 20 B3 46 E7 E2 82 0A 98 6E 76 28 31 04 7A 80 07 FE 30 5B E0 54 A0 57 60 5A E4 00 00 50 AA 06 64 00 04 04 41 7F 40 21 46 5F E3 68 2A 90 00 04 80 20 02 12 80 03 E8 30 00 3E 82 C0 03 25 FE 07 F8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 </User_Tele>";
             encoded830 = Format830Encoded(encoded830);
 
-            IntPtr ptr;
-
-            ptr = OnMsgDecode(encoded830, ref length);
-            String text = PtrToStringKorean(ptr, length);
+            OnMsgDecode(encoded830, ref length, output);
+            String text = PtrToStringKorean(output, length);
 
             if (text == "")
             {
-                ptr = OnMsgDecode(encoded830, ref length);
-                text = PtrToStringKorean(ptr, length);
+                OnMsgDecode(encoded830, ref length, output);
+                text = PtrToStringKorean(output, length);
             }
             decodeWindow.decode_textBox.AppendText(text);
 
@@ -1058,17 +1057,17 @@ namespace Console2
 
         String Decode1023Start(string encoded1023)
         {
-            IntPtr ptr;
+            IntPtr output = Marshal.AllocHGlobal(1000);
 
             encoded1023 = Format1023Encoded(encoded1023); // need to format the string so dll will accept it
             //encoded1023 = "<Transport_Tele>61 99 AB 46 10 4F 31 1A 52 C1 EE D4 B6 A7 C1 E5 52 46 11 F3 DC 6E 8A AB D5 A0 E7 3A 75 88 89 8B E6 E4 79 8A 21 E4 DE 37 5B 13 BB 6B CE C8 10 5D 1E 54 ED DB C9 CC 8E 8D 65 17 8A AF 0C D7 BF B5 17 BE 34 D3 8A B2 C0 F0 FA 19 04 AA 2C 4B 6E 2E 27 2D D3 E8 39 0F 66 42 93 28 52 85 46 ED 77 25 09 C7 A7 A4 65 B8 A9 18 28 F3 3C D0 E1 06 55 6D A1 92 90 13 9E 65 1D 53 70 30 23 71 AA 2A F7 2A </Transport_Tele>";
 
-            ptr = OnDecode(encoded1023);
-            String encoded830 = PtrToStringAscii(ptr);
+            OnDecode(encoded1023, output);
+            String encoded830 = PtrToStringAscii(output);
             if (encoded830 == "")
             {
-                ptr = OnDecode(encoded1023);
-                encoded830 = PtrToStringAscii(ptr);
+                OnDecode(encoded1023, output);
+                encoded830 = PtrToStringAscii(output);
             }
             msgbox.AppendText(encoded830);
             msgbox.ScrollToEnd();
