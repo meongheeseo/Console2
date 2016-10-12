@@ -180,6 +180,8 @@ namespace Console2
             countrycode_txt.Text = String.Empty;
             groupcode_txt.Text = String.Empty;
             poscode_txt.Text = String.Empty;
+
+            decodeWindow.decode_textBox.AppendText("HI\r\n");
         }
 
         // ----- MESSAGEBOX SAVE & CLEAR FUNCTIONS ----- //
@@ -1044,21 +1046,22 @@ namespace Console2
             ptr = OnMsgDecode(encoded830, ref length);
             String text = PtrToStringKorean(ptr, length);
 
-            while (text == "")
+            if (text == "")
             {
                 ptr = OnMsgDecode(encoded830, ref length);
                 text = PtrToStringKorean(ptr, length);
             }
+            decodeWindow.decode_textBox.AppendText(text);
 
             return text;
         }
 
         String Decode1023Start(string encoded1023)
         {
-            //encoded1023 = "<Transport_Tele>61 99 AB 46 10 4F 31 1A 52 C1 EE D4 B6 A7 C1 E5 52 46 11 F3 DC 6E 8A AB D5 A0 E7 3A 75 88 89 8B E6 E4 79 8A 21 E4 DE 37 5B 13 BB 6B CE C8 10 5D 1E 54 ED DB C9 CC 8E 8D 65 17 8A AF 0C D7 BF B5 17 BE 34 D3 8A B2 C0 F0 FA 19 04 AA 2C 4B 6E 2E 27 2D D3 E8 39 0F 66 42 93 28 52 85 46 ED 77 25 09 C7 A7 A4 65 B8 A9 18 28 F3 3C D0 E1 06 55 6D A1 92 90 13 9E 65 1D 53 70 30 23 71 AA 2A F7 2A </Transport_Tele>";
             IntPtr ptr;
 
             encoded1023 = Format1023Encoded(encoded1023); // need to format the string so dll will accept it
+            //encoded1023 = "<Transport_Tele>61 99 AB 46 10 4F 31 1A 52 C1 EE D4 B6 A7 C1 E5 52 46 11 F3 DC 6E 8A AB D5 A0 E7 3A 75 88 89 8B E6 E4 79 8A 21 E4 DE 37 5B 13 BB 6B CE C8 10 5D 1E 54 ED DB C9 CC 8E 8D 65 17 8A AF 0C D7 BF B5 17 BE 34 D3 8A B2 C0 F0 FA 19 04 AA 2C 4B 6E 2E 27 2D D3 E8 39 0F 66 42 93 28 52 85 46 ED 77 25 09 C7 A7 A4 65 B8 A9 18 28 F3 3C D0 E1 06 55 6D A1 92 90 13 9E 65 1D 53 70 30 23 71 AA 2A F7 2A </Transport_Tele>";
 
             ptr = OnDecode(encoded1023);
             String encoded830 = PtrToStringAscii(ptr);
@@ -1078,7 +1081,8 @@ namespace Console2
 
             if (device_id == 0)     //Balise
             {
-                telReadProcess();
+                //telReadProcess();
+                dummyBaliseUpload();
                 return;
             }
             else if (device_id == 2)     //Not LEU
@@ -1098,11 +1102,38 @@ namespace Console2
         }
 
 
+        private void dummyBaliseUpload()
+        {
+            byte[] A1stream = new byte[480];
+            Buffer.BlockCopy(upLoadstream, 0, A1stream, 0, 480);
 
+            IntPtr ptr;
+            String result;
+            int length;
 
+            ptr = Separate(A1stream, 480);
+            result = PtrToStringAscii(ptr);
+            length = result.Length;
 
-        /*
-        byte[] upLoadstream = new byte[] { 
+            if (length < 570)
+            {
+                Buffer.BlockCopy(upLoadstream, 0, A1stream, 0, 480);
+                ptr = Separate(A1stream, 480);
+                result = PtrToStringAscii(ptr);
+                length = result.Length;
+            }
+
+            if (length >= 570)
+            {
+                msgbox.AppendText(result);
+                msgbox.AppendText("\r\n");
+                msgbox.ScrollToEnd();
+                result = Decode1023Start(result);
+                result = Decode830Start(result);
+            }
+        }
+
+        byte[] upLoadstream = new byte[480] { 
             0xD7,0x20,0x62,0x57,0xF3,0x3C,0xCC,0x6B,0x1A,0xF5,0x78,0x4A,0xB4,0x20,0x76,0x8D,    //1
             0x2E,0x6F,0xC1,0xDC,0x2A,0x56,0xAF,0x69,0x3B,0xC9,0xF3,0x8F,0xD9,0xCC,0x0C,0x37,    //2
             0x22,0x3C,0xC7,0xB4,0x4F,0xF0,0xE3,0xBD,0x45,0xC9,0xE0,0xE5,0x60,0x87,0x8C,0x72,    //3
@@ -1134,38 +1165,8 @@ namespace Console2
             0x0E,0xEB,0x90,0x31,0x2B,0xF9,0x9E,0x66,0x35,0x8D,0x7A,0xBC,0x25,0x5A,0x10,0x3B,    //29 
             0x46,0x97,0x37,0xE0,0xEE,0x15,0x2B,0x57,0xB4,0x9D,0xE4,0xF9,0xC7,0xEC,0xE6,0x06     //30 
         };
-        
 
-        /*
-        int size = Marshal.SizeOf(upLoadstream[0]) * upLoadstream.Length;
-        IntPtr pnt = Marshal.AllocHGlobal(size);
-        try
-        {
-            // Copy the array to unmanaged memory.
-            Marshal.Copy(upLoadstream, 0, pnt, upLoadstream.Length);
-        }
-        finally
-        {
-            // Free the unmanaged memory.
-            // Marshal.FreeHGlobal(pnt);
-        }
-        //============================*/
-        /*
-        IntPtr ptr;
-        String result;
 
-        ptr = Separate(upLoadstream, 480);
-        result = PtrToStringAscii(ptr);
-
-        if (result == "")
-        {
-            ptr = Separate(upLoadstream, 480);
-            result = PtrToStringAscii(ptr);
-        }
-
-        msgbox.AppendText(result);
-        msgbox.ScrollToEnd();
-    }*/
 
         // Formats returned string of upload to format vcDecode.dll will accept.
         private String Format1023Encoded(String input)
@@ -1184,7 +1185,7 @@ namespace Console2
             input = string.Concat(input.Trim(), " ");
             return input;
         }
-        
+
         private static String PtrToStringAscii(IntPtr ptr) // aPtr is nul-terminated
         {
             if (ptr == IntPtr.Zero)
@@ -1197,8 +1198,6 @@ namespace Console2
             byte[] array = new byte[len];
             Marshal.Copy(ptr, array, 0, len);
 
-            if (array[len - 1] != 10)
-                return "";
             return System.Text.Encoding.ASCII.GetString(array);
         }
 
@@ -1238,12 +1237,13 @@ namespace Console2
             Dispatcher.PushFrame(frame);
         }
 
+        DecodeWindow decodeWindow;
         private void msgDecode_btn_Click(object sender, RoutedEventArgs e)
         {
-            String text = Decode830Start("");
-
-            DecodeWindow decodeWindow = new DecodeWindow(text);
-            decodeWindow.ShowDialog();
+            //String text = Decode830Start("");
+            //String text = "";
+            decodeWindow = new DecodeWindow();
+            decodeWindow.Show();
         }
     }
 

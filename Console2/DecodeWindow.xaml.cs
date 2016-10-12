@@ -11,6 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+using Microsoft.Win32; // SaveFileDialog
+using System.IO; // File
+
 namespace Console2
 {
     /// <summary>
@@ -18,12 +21,29 @@ namespace Console2
     /// </summary>
     public partial class DecodeWindow : Window
     {
-        public DecodeWindow(String text)
+        public DecodeWindow()
         {
             InitializeComponent();
+        }
 
-            decode_textBox.Text = text;
-            decode_textBox.ScrollToEnd();
+        private void save_button_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFile = new SaveFileDialog();
+
+            // if you don't need to keep the color of the text, use *.txt instead.
+            saveFile.Filter = "Text (*.txt)|*.txt";
+            saveFile.DefaultExt = "txt";
+            saveFile.AddExtension = true;
+
+            if (saveFile.ShowDialog() == true && saveFile.FileName.Length > 0)
+            {
+                File.WriteAllText(saveFile.FileName, decode_textBox.Text);
+            }
+        }
+
+        private void clear_button_Click(object sender, RoutedEventArgs e)
+        {
+            decode_textBox.Clear();
         }
     }
 }
