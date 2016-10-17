@@ -15,7 +15,7 @@
                     <RadioButton Content="ShinWoo" Name="manu_shinwoo" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="manu_shinwoo_Checked" IsChecked="True"/>
                     <RadioButton Content="Bombardier" Name="manu_bombardier" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="manu_bombardier_Checked" />
                     <RadioButton Content="Siemens" Name="manu_siemens" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="manu_siemens_Checked" />
-                    <RadioButton Content="Others" Name="manu_others" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="manu_others_Checked" />
+                    <RadioButton Content="Thalse" Name="manu_thalse" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="manu_thalse_Checked" />
                 </Grid>
             </GroupBox>
             <GroupBox Header="Position Information" Height="187" HorizontalAlignment="Center" Margin="21,178,257,0" Name="position_gpbox" VerticalAlignment="Top" Width="279">
@@ -45,11 +45,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <RadioButton Content="Balise" Height="16" HorizontalAlignment="Center" Name="pos_balise" VerticalAlignment="Center" Grid.Column="0" IsChecked="True" Checked="pos_balise_Checked" />
                             <RadioButton Content="LEU" Height="16" HorizontalAlignment="Center" Name="pos_leu" VerticalAlignment="Center" Grid.Column="1" Checked="pos_leu_Checked" />
-                            <RadioButton Content="Others" Height="16" HorizontalAlignment="Center" Name="pos_others" VerticalAlignment="Center" Grid.Column="2" Checked="pos_others_Checked" />
                         </Grid>
                     </GroupBox>
                     <Button Content="Download" Height="23" HorizontalAlignment="Center" Margin="0,0,0,20" Name="download_btn" VerticalAlignment="Bottom" Width="65" Grid.Column="0" Click="download_btn_Click" />
@@ -87,12 +85,10 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Button Content="Telegram Read" Grid.Column ="0" Height="23" HorizontalAlignment="Center" Name="telRead_btn" VerticalAlignment="Center" Width="98" Click="telRead_btn_Click" />
-                    <Button Content="간이 입출력 특성" Grid.Column="1" Height="23" HorizontalAlignment="Center" Name="tempinout_btn" VerticalAlignment="Center" Width="98" Click="tempinout_btn_Click" />
-                    <Button Content="정밀 입출력 특성" Grid.Column="2" Height="23" HorizontalAlignment="Center" Name="inout_btn" VerticalAlignment="Center" Width="98" />
-                    <Button Content="Stop" Grid.Column="3" Height="23" HorizontalAlignment="Center" Name="telStop_btn" VerticalAlignment="Center" Width="98" />
+                    <Button Content="Telegram Read" Grid.Column ="0" Height="23" HorizontalAlignment="Center" Name="telRead_btn" VerticalAlignment="Center" Width="110" Click="telRead_btn_Click" />
+                    <Button Content="간이 입출력 특성" Grid.Column="1" Height="23" HorizontalAlignment="Center" Name="tempinout_btn" VerticalAlignment="Center" Width="110" Click="tempinout_btn_Click" />
+                    <Button Content="정밀 입출력 특성" Grid.Column="2" Height="23" HorizontalAlignment="Center" Name="inout_btn" VerticalAlignment="Center" Width="110" />
                 </Grid>
             </GroupBox>
         </Grid>

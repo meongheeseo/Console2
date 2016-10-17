@@ -35,3 +35,11 @@ C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Consol
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.csproj.GenerateResource.Cache
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.exe
 C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Console2.pdb
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\bin\Debug\System.Windows.Controls.DataVisualization.Toolkit.dll
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\bin\Debug\WPFToolkit.dll
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\bin\Debug\System.Windows.Controls.DataVisualization.Toolkit.pdb
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\bin\Debug\WPFToolkit.pdb
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\TempInOut.baml
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\TempInOut.g.cs
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Options.baml
+C:\Users\MeongHee\Documents\Work\Projects\Console2\Console2\obj\x86\Debug\Options.g.cs

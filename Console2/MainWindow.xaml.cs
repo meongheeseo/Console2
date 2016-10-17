@@ -128,7 +128,7 @@ namespace Console2
             manufacturer_id = 2;
         }
 
-        private void manu_others_Checked(object sender, RoutedEventArgs e)
+        private void manu_thalse_Checked(object sender, RoutedEventArgs e)
         {
             position_gpbox.Visibility = Visibility.Hidden;
             manufacturer_id = 3;
@@ -143,11 +143,6 @@ namespace Console2
         private void pos_leu_Checked(object sender, RoutedEventArgs e)
         {
             device_id = 1;
-        }
-
-        private void pos_others_Checked(object sender, RoutedEventArgs e)
-        {
-            device_id = 2;
         }
 
         // ----- READ, WRITE, RESET BUTTON CONTROL ----- //
@@ -321,7 +316,10 @@ namespace Console2
             data[5] = (byte)(timeout);
 
             myRecSeq = 0;
-            BaliseTelegramSend(data, true);
+            //BaliseTelegramSend(data, true);
+
+            TempInOut tempInOut = new TempInOut();
+            tempInOut.Show();
         }
 
         // Sends downloaded telegram message via serial port.
@@ -1241,6 +1239,7 @@ namespace Console2
         {
             //String text = Decode830Start("");
             //String text = "";
+            msgbox.AppendText("Hello", "Aliceblue");
             decodeWindow = new DecodeWindow();
             decodeWindow.Show();
         }

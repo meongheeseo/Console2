@@ -34,5 +34,65 @@ namespace Console2.Properties {
                 this["ComportString"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-5")]
+        public double OptionsMin {
+            get {
+                return ((double)(this["OptionsMin"]));
+            }
+            set {
+                this["OptionsMin"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public double OptionsMax {
+            get {
+                return ((double)(this["OptionsMax"]));
+            }
+            set {
+                this["OptionsMax"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public double OptionsSteps {
+            get {
+                return ((double)(this["OptionsSteps"]));
+            }
+            set {
+                this["OptionsSteps"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public double OptionsInterval {
+            get {
+                return ((double)(this["OptionsInterval"]));
+            }
+            set {
+                this["OptionsInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OptionsCom {
+            get {
+                return ((string)(this["OptionsCom"]));
+            }
+            set {
+                this["OptionsCom"] = value;
+            }
+        }
     }
 }

@@ -1,0 +1,46 @@
+﻿<Window x:Class="Console2.TempInOut"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:toolkit="http://schemas.microsoft.com/wpf/2008/toolkit"
+        xmlns:chartingToolkit="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        Title="간이 입출력" Height="700" Width="1000">
+    <Grid>
+        <Grid Height="39" HorizontalAlignment="Stretch" Name="stackPanel1" VerticalAlignment="Top" Margin="12,0" Width="950">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Reset" Height="23" HorizontalAlignment="Center" Name="reset_button" Width="75" Grid.Column="0" Click="reset_button_Click" />
+            <Button Content="Start" Height="23" HorizontalAlignment="Center" Name="start_button" Width="75" Grid.Column="1" />
+            <Button Content="Brake" Height="23" HorizontalAlignment="Center" Name="brake_button" Width="75" Grid.Column="2" />
+            <Button Content="Save" Height="23" HorizontalAlignment="Center" Name="save_button" Width="75" Grid.Column="3" Click="save_button_Click" />
+            <Button Content="Color" Height="23" HorizontalAlignment="Center" Name="color_button" Width="75" Grid.Column="4" />
+            <Button Content="Load" Height="23" HorizontalAlignment="Center" Name="load_button" Width="75" Grid.Column="5" />
+            <Button Content="Print" Height="23" HorizontalAlignment="Center" Name="print_button" Width="75" Grid.Column="6" />
+            <Button Content="Options" Height="23" HorizontalAlignment="Center" Name="options_button" Width="75" Grid.Column="7" Click="options_button_Click" />
+        </Grid>
+        <ProgressBar Height="25" HorizontalAlignment="Center" Margin="12,45,12,0" Name="progressBar" VerticalAlignment="Top" Width="954" ValueChanged="progressBar_ValueChanged" />
+        <TextBlock Height="22" HorizontalAlignment="Center" Margin="0,49,0,0" Name="progressLabel_textBlock" TextAlignment="Center" VerticalAlignment="Top" Width="228" />
+        <RichTextBox Height="345" HorizontalAlignment="Center" Margin="12,89,616,0" Name="rawdata_richTextBox" VerticalAlignment="Top" Width="350">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+            </RichTextBox.Resources>
+        </RichTextBox>
+        <RichTextBox Height="209" HorizontalAlignment="Center" Margin="12,440,12,0" Name="richTextBox2" VerticalAlignment="Top" Width="954">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+            </RichTextBox.Resources>
+        </RichTextBox>
+        <chartingToolkit:Chart Height="345" HorizontalAlignment="Center" Margin="375,89,12,0" Name="chart" VerticalAlignment="Top" Width="591"></chartingToolkit:Chart>
+    </Grid>
+</Window>

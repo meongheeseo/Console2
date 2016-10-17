@@ -1,0 +1,20 @@
+﻿<Window x:Class="Console2.Options"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Options" Height="274" Width="314">
+    <Grid>
+        <Label Content="ADAM-4024 Output Range" FontWeight="Bold" Height="28" HorizontalAlignment="Center" Margin="12,9,111,0" Name="output_label" VerticalAlignment="Top" Width="169" />
+        <Label Content="Total Step Size" FontWeight="Bold" Height="28" HorizontalAlignment="Center" Margin="12,76,172,0" Name="step_label" VerticalAlignment="Top" Width="107" />
+        <Label Content="Min:" Height="28" FontSize="11" HorizontalAlignment="Center" Margin="22,34,225,0" Name="outputMin_label" VerticalAlignment="Top" />
+        <TextBox Height="22" TextAlignment="Center" HorizontalAlignment="Center" Margin="59,37,158,0" Name="outputMin_textBox" VerticalAlignment="Top" Width="75" />
+        <Label Content="Max:" Height="28" FontSize="11" HorizontalAlignment="Center" Margin="155,34,104,0" Name="outputMax_label" VerticalAlignment="Top" />
+        <TextBox Height="22" TextAlignment="Center" HorizontalAlignment="Center" Margin="188,37,30,0" Name="outputMax_textBox" VerticalAlignment="Top" Width="75" />
+        <TextBox Height="23" HorizontalAlignment="Center" TextAlignment="Center" Margin="170,78,12,0" Name="stepSize_textBox" VerticalAlignment="Top" Width="110" />
+        <Label Content="Measurement Interval:" FontWeight="Bold" Height="28" HorizontalAlignment="Center" Margin="12,117,142,0" Name="interval_label" VerticalAlignment="Top" Width="138" />
+        <TextBox Height="23" HorizontalAlignment="Center" TextAlignment="Center"  Margin="170,117,30,0" Name="interval_textBox" VerticalAlignment="Top" Width="92" />
+        <Label Content="ADAM-4024 COM Port:" FontWeight="Bold" Height="28" HorizontalAlignment="Center" Margin="12,159,126,0" Name="adam_label" VerticalAlignment="Top" Width="154" />
+        <ComboBox Height="23" HorizontalAlignment="Center" Margin="170,159,12,0" Name="adam_comboBox" VerticalAlignment="Top" Width="110" />
+        <Button Content="Save" Height="23" HorizontalAlignment="Center" Margin="124,200,92,0" Name="save_button" VerticalAlignment="Top" Width="75" Click="save_button_Click" />
+        <Button Content="Cancel" Height="23" HorizontalAlignment="Center" Margin="205,200,12,0" Name="cancel_button" VerticalAlignment="Top" Width="75" Click="cancel_button_Click" />
+    </Grid>
+</Window>
